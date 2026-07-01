@@ -4,10 +4,11 @@ Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus four
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
-| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 | Mariachi 🪇 |
-|:----:|:-----------------:|:-------------:|:----------:|:----------:|
-| ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) | ![mariachi](emoji/mariachi/clawd_mariachi.gif) |
-| static, transparent | animated, seamless loop | animated, seamless loop | animated, seamless loop | animated, seamless loop |
+| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
+|:---:|:---:|:---:|:---:|
+| ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
+| **Mariachi 🪇** |  |  |  |
+| ![mariachi](emoji/mariachi/clawd_mariachi.gif) |  |  |  |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
