@@ -86,7 +86,8 @@ tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 
 ### Surfing — [`render_surf_anim.py`](scripts/render_surf_anim.py)
 Clawd dropping down the face of a breaking wave on a red surfboard, composited
-back-to-front (ocean → crest foam → Clawd+board → waterline wash + bow-spray).
+back-to-front (ocean → crest foam → crest spray → Clawd+board → waterline
+wash + bow-spray).
 Unlike the other emoji this one renders on the **full 128 grid** (`CELL=1`), so
 Clawd is bigger, more central, and his edges/rotation are half the block size —
 noticeably less pixelated:
@@ -99,13 +100,16 @@ noticeably less pixelated:
   **matched to the face slope** and the board is **sunk** slightly so it planes
   *through* the wave rather than floating over it. A gentle rock and a vertical
   bob keep them alive on the wave.
-- **spray:** a thin bright **foam wash** breaks along the waterline where the
-  board cuts the wave, and a little **bow-spray** kicks up off the nose.
+- **spray:** a **rooster-tail** fans up off the wave lip (drawn behind Clawd so
+  it sits in the right depth), a thin bright **foam wash** breaks along the
+  waterline where the board cuts the wave, and a little **bow-spray** kicks up
+  off the nose.
 
 The **loop is seamless by construction**: the bob, the rock, and the bow-spray's
 flicker are all `sin(2π·f/F)`; the swell ripple and sparkle scroll advance a
-whole number of cycles over the loop (phase `2π·(… − k·f/F)`); the waterline
-wash is a static ragged pattern.
+whole number of cycles over the loop (phase `2π·(… − k·f/F)`); the crest spray
+is a pure function of `frame mod F`; the waterline wash is a static ragged
+pattern.
 
 ---
 

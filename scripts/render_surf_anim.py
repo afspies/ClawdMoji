@@ -16,6 +16,7 @@ and rock are sin(2*pi*f/F), and all foam/spray are pure functions of `f mod F`.
 Outputs clawd_surf_still.png and clawd_surf.gif.
 """
 import math
+import random
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -174,17 +175,47 @@ def paint_ocean(g, f):
                 c = W_L
             g[y, x] = c
 
+CREST_X = PEAK_X + WAVE_DX                            # screen column of the crest
+
 def crest_foam(g, f):
     """White foam capping the breaking wave: a band along the steep lip."""
     for x in range(1, N):
         s0 = surface_row(x - 1, f); s1 = surface_row(x, f)
         slope = abs(s1 - s0)
         s = int(round(s1))
-        near_peak = abs(x - PEAK_X) <= 12
+        near_peak = abs(x - CREST_X) <= 12
         if (slope > 0.35 or near_peak) and 0 <= s < N:
             depth = 5 if slope > 0.7 else 3          # thicker foam on the steepest part
             for y in range(max(0, s), min(N, s + depth)):
                 g[y, x] = FOAM
+
+# spray flicking off the top of the wave -- fans up off the lip into the open
+# air above the crest, arcing back down under gravity.
+_srng = random.Random(71)
+CREST_SPRAY = []                                     # (launch-dx, vx, vy, start)
+for _ in range(52):
+    lox = _srng.uniform(-7, 7)                       # spread along the lip
+    vx  = _srng.uniform(-1.8, 1.6)                   # fan out both ways
+    vy  = -_srng.uniform(2.4, 5.6)                   # strong upward launch
+    CREST_SPRAY.append((lox, vx, vy, _srng.randrange(F)))
+CREST_LIFE = 8
+CREST_G = 0.24                                       # gravity on the arc
+
+def paint_crest_spray(g, f):
+    """Rooster-tail off the wave lip. Drawn *behind* Clawd (before he's placed)
+    so it reads as spray coming off the crest behind the surfer."""
+    ly = surface_row(CREST_X, f) - 1
+    for lox, vx, vy, start in CREST_SPRAY:
+        t = (f - start) % F
+        if t >= CREST_LIFE:
+            continue
+        x = int(round(CREST_X + lox + vx * t))
+        y = int(round(ly + vy * t + CREST_G * t * t))
+        dabs = [(0, 0)] if t >= 4 else [(0, 0), (1, 0), (0, 1)]  # dense base, fine tips
+        for dx, dy in dabs:
+            xx, yy = x + dx, y + dy
+            if 0 <= xx < N and 0 <= yy < N:
+                g[yy, xx] = FOAM
 
 
 def contact_point(f):
@@ -236,6 +267,7 @@ def compose(f):
     g = np.zeros((N, N), dtype=np.uint8)
     paint_ocean(g, f)
     crest_foam(g, f)
+    paint_crest_spray(g, f)         # spray off the wave lip, behind Clawd
     place_clawd(g, f)               # assembly + waterline wash + bow-spray
     if CELL == 1:
         big = g
