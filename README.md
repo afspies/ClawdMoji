@@ -1,4 +1,4 @@
-# Clawd emoji
+# ClawdMoji
 
 Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus two
 animated variants. Everything is generated programmatically from the original
@@ -114,7 +114,7 @@ Animated GIFs animate inline.
 ## Layout
 
 ```
-clawd-emoji/
+ClawdMoji/
 ├── source/   original logo screenshot
 ├── scripts/  analysis + render scripts (path-robust)
 ├── emoji/    generated outputs (committed)

@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Intermediate analysis arrays (regenerable via analyze_grid.py)
+build/
+*.npy
