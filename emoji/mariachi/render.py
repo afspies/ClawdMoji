@@ -70,7 +70,7 @@ WPX, WPY = 64, 74
 
 # ---- arm + maraca geometry --------------------------------------------
 ARM_ANG  = 10       # rest angle above horizontal (degrees, pointing up-and-out)
-LARM     = 7        # orange upper arm length
+LARM     = 10       # orange upper arm length (reaches the maraca further out)
 LHANDLE  = 9        # brown handle length (holds the bulb out past the arm)
 BULB_R   = 6        # maraca bulb radius
 
