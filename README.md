@@ -1,14 +1,14 @@
 # ClawdMoji
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus four
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus five
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
 | Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| **Mariachi 🪇** |  |  |  |
-| ![mariachi](emoji/mariachi/clawd_mariachi.gif) |  |  |  |
+| **Mariachi 🪇** | **Bug catcher 🦋** |  |  |
+| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) |  |  |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -133,6 +133,31 @@ The **loop is seamless by construction**: the side-step is `sin(2π·f/F)`, the
 bounce is `|sin(2π·f/F)|`, the maraca shake is `sin(2π·2f/F)` (two shakes per
 loop) and the note bob is `sin`/`cos` of `2π·f/F` — all equal at `f=0` and `f=F`.
 
+### Bug catcher — [`bugcatcher/render.py`](emoji/bugcatcher/render.py)
+Clawd out in a sunny meadow in a pith helmet and a collector's satchel, swinging
+a handheld net at a butterfly that keeps fluttering just out of reach. Full 128
+grid (`CELL=1`) so the helmet dome, the mesh hoop and the butterfly stay crisp.
+Unlike the sprite-on-transparent emoji this one is a **full opaque scene** that
+fills the square, composited back-to-front (sky + clouds → grass → flowers →
+specimen jar → Clawd → net → butterfly → foreground grass):
+- **field:** a blue sky with a couple of soft clouds over a green meadow of
+  swaying blades and flowers, with a specimen jar sitting in the grass — part of
+  the bug-catching kit.
+- **Clawd:** full 2 px white outline, in a khaki **pith helmet** (rounded dome,
+  band, wide down-curved brim, top knob) with a strap-slung **satchel** — one
+  rigid piece with a tiny bob.
+- **net:** an orange arm grips a long pole ending in a woven **mesh hoop**; the
+  whole arm + pole + net is **one assembly rotated about the shoulder**, so it
+  swings up and back once per loop.
+- **butterfly:** flaps its wings and flies a little evasive figure-eight, staying
+  a few pixels above the hoop at the top of every swing — *so close*.
+
+The **loop is seamless by construction**: the net swing is `sin(2π·f/F)`, the
+butterfly path is `sin`/`sin(2·)` of `2π·f/F`, the wing flap is `cos(2π·3f/F)`
+(three flaps per loop) and the grass sway is `sin(2π·f/F)` — all equal at `f=0`
+and `f=F`. Because the field fills the whole square, the GIF is written as full
+opaque frames (`disposal=1`, no transparency) so nothing flickers.
+
 ---
 
 ## Regenerate
@@ -149,12 +174,14 @@ python3 emoji/fire/render.py        # -> emoji/fire/clawd_fire.gif + still
 python3 emoji/rain/render.py        # -> emoji/rain/clawd_rain.gif + still
 python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
 python3 emoji/mariachi/render.py    # -> emoji/mariachi/clawd_mariachi.gif + still
+python3 emoji/bugcatcher/render.py  # -> emoji/bugcatcher/clawd_bugcatcher.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
 height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
 splash frequency for rain; wave geometry, bob, ripple, and spray for surf;
-sway/hop/tilt and the sombrero + maraca geometry for mariachi.
+sway/hop/tilt and the sombrero + maraca geometry for mariachi; the net swing,
+butterfly flutter, and helmet/net/field geometry for bug catcher.
 [`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
 *static* "this is fine" (kept for reference; the animated version supersedes it).
 
@@ -162,8 +189,8 @@ sway/hop/tilt and the sombrero + maraca geometry for mariachi.
 
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
 relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
-`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`).
-Animated GIFs animate inline.
+`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`,
+`:clawd-bugcatcher:`). Animated GIFs animate inline.
 
 ## Layout
 
@@ -180,6 +207,7 @@ ClawdMoji/
 │   ├── fire/         render.py (+ render_static.py) + clawd_fire.gif/still
 │   ├── rain/         render.py + clawd_rain.gif/still
 │   ├── surf/         render.py + clawd_surf.gif/still
-│   └── mariachi/     render.py + clawd_mariachi.gif/still
+│   ├── mariachi/     render.py + clawd_mariachi.gif/still
+│   └── bugcatcher/   render.py + clawd_bugcatcher.gif/still
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
