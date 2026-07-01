@@ -70,33 +70,83 @@ def surface_row(x, f):
     ripple = RIPPLE * math.sin(2*math.pi * (x / LAMBDA - RIPK * f / F))
     return base_surface(x) + ripple
 
-# ---- Clawd + thin white border ---------------------------------------
+# ---- Clawd + surfboard, built as one rotatable assembly --------------
 ART = [
     "..########..", "..#O####O#..", "############", "############",
     "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#..",
 ]
 SCALE = 3
 SX, SY = 12*SCALE, 8*SCALE       # 36 x 24
-RIDE_X = 29                      # Clawd centre column (on the left face)
+RIDE_X = 29                      # board water-contact column (on the left face)
+ANGLE  = 22                      # base lean down the face (degrees)
+ROCK   = 3.0                     # gentle rocking amplitude (degrees, seamless)
 
-sprite = np.zeros((SY, SX), dtype=np.uint8)
-for j, row in enumerate(ART):
-    for i, ch in enumerate(row):
-        if ch == ".":
+
+def build_assembly():
+    """Clawd (with a full 2px white outline) standing on a fat surfboard,
+    laid out flat in a padded local canvas. Returns the index array plus the
+    board's underside-centre cell -- the point that rides the water and that
+    the whole assembly rotates about."""
+    PAD, BOARD_TH = 6, 3         # PAD leaves room for the outline + board overhang
+    W = SX + 2*PAD
+    H = SY + BOARD_TH + 2*PAD
+    A = np.zeros((H, W), dtype=np.uint8)
+    ox, oy = PAD, PAD
+    for j, row in enumerate(ART):
+        for i, ch in enumerate(row):
+            if ch == ".":
+                continue
+            A[oy+j*SCALE:oy+(j+1)*SCALE, ox+i*SCALE:ox+(i+1)*SCALE] = \
+                EYE if ch == "O" else CLAWD
+    # white outline -- the PAD gives the dilation room on every side (incl. top)
+    body = (A == CLAWD) | (A == EYE)
+    border = np.zeros_like(body)
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            sh = np.zeros_like(body)
+            ys = slice(max(0, dy), H+min(0, dy)); xs = slice(max(0, dx), W+min(0, dx))
+            yt = slice(max(0, -dy), H+min(0, -dy)); xt = slice(max(0, -dx), W+min(0, -dx))
+            sh[ys, xs] = body[yt, xt]; border |= sh
+    border &= ~body
+    A[border] = WHITE
+    # surfboard: a fat lozenge just under Clawd's feet
+    feet_row = oy + SY - 1
+    bcx = ox + SX // 2
+    deck = feet_row + 1
+    half = SX // 2 + 4
+    for dx in range(-half, half + 1):
+        frac = dx / half
+        x = bcx + dx
+        if not (0 <= x < W):
             continue
-        sprite[j*SCALE:(j+1)*SCALE, i*SCALE:(i+1)*SCALE] = EYE if ch == "O" else CLAWD
-sbody = sprite > 0
-sborder = np.zeros_like(sbody)
-for dy in (-1, 0, 1):
-    for dx in (-1, 0, 1):
-        sh = np.zeros_like(sbody)
-        ys = slice(max(0, dy), SY+min(0, dy)); xs = slice(max(0, dx), SX+min(0, dx))
-        yt = slice(max(0, -dy), SY+min(0, -dy)); xt = slice(max(0, -dx), SX+min(0, -dx))
-        sh[ys, xs] = sbody[yt, xt]; sborder |= sh
-sborder &= ~sbody
-sprite[sborder] = WHITE
-SPR_MASK = sprite > 0
-FEET_DX = SX // 2                 # sprite-local x of Clawd's centre
+        thick = 3 if abs(frac) < 0.55 else (2 if abs(frac) < 0.82 else 1)
+        for t in range(thick):
+            yy = deck + t
+            if 0 <= yy < H:
+                A[yy, x] = STRIPE if (t == 1 and abs(frac) < 0.62) else BOARD
+    return A, (deck + BOARD_TH - 1, bcx)     # contact = board underside centre
+
+
+ASSEMBLY, (CY, CX) = build_assembly()
+
+
+def _center_on(A, cy, cx):
+    """Pad A so (cy,cx) sits at the exact centre -> rotation pivots there."""
+    H, W = A.shape
+    py, px = max(cy, H-1-cy), max(cx, W-1-cx)
+    out = np.zeros((2*py+1, 2*px+1), dtype=np.uint8)
+    out[py-cy:py-cy+H, px-cx:px-cx+W] = A
+    return out                               # centre index = (py, px)
+
+
+CENTERED = _center_on(ASSEMBLY, CY, CX)
+
+
+def rotated(angle_deg):
+    im = Image.fromarray(CENTERED, mode="P")
+    im.putpalette(pal_bytes)
+    r = im.rotate(angle_deg, resample=Image.NEAREST, expand=True, fillcolor=0)
+    return np.asarray(r)                      # expand keeps the pivot at centre
 
 def paint_ocean(g, f):
     for x in range(N):
@@ -125,61 +175,63 @@ def crest_foam(g, f):
             for y in range(max(0, s), min(N, s + depth)):
                 g[y, x] = FOAM
 
-def place_clawd(g, f):
+def contact_point(f):
+    """World cell the board rides, this frame (surface at RIDE_X + bob)."""
     bob = BOB * math.sin(2*math.pi * f / F)
-    # board rides the surface under Clawd's centre column; Clawd's feet sit
-    # on the board's deck (board top overlaps the very bottom of the legs).
-    board_cy = int(round(surface_row(RIDE_X, f) + bob))
-    top = board_cy - SY
-    ox = RIDE_X - FEET_DX
-    # --- surfboard: fat tilted lozenge, nose (left/downhill) raised ---
-    half = FEET_DX + 4
-    for dx in range(-half, half + 1):
-        frac = dx / half
-        tilt = int(round(-2.4 * frac))              # left end up, right end down
-        x = RIDE_X + dx
-        if not (0 <= x < N):
-            continue
-        base_y = board_cy + tilt
-        # thickness tapers to points at nose and tail
-        thick = 3 if abs(frac) < 0.55 else (2 if abs(frac) < 0.82 else 1)
-        # a foamy wake spits off the tail (right/downhill end)
-        if frac > 0.6 and 0 <= base_y + 2 < N:
-            g[base_y + 2, x] = FOAM
-        for t in range(thick):
-            yy = base_y + t
-            if 0 <= yy < N:
-                g[yy, x] = STRIPE if (t == 1 and abs(frac) < 0.62) else BOARD
-    # --- Clawd on top ---
-    for j in range(SY):
-        yy = top + j
-        if not (0 <= yy < N):
-            continue
-        for i in range(SX):
-            if SPR_MASK[j, i]:
-                xx = ox + i
-                if 0 <= xx < N:
-                    g[yy, xx] = sprite[j, i]
+    return RIDE_X, surface_row(RIDE_X, f) + bob
 
-# ---- spray burst off the breaking lip --------------------------------
-_srng = random.Random(71)
-# anchors near the crest lip; each fleck has a launch angle + phase in the loop
-SPRAY = []
-for _ in range(26):
-    ang = _srng.uniform(-2.5, -0.6)                 # up-and-outward
-    spd = _srng.uniform(0.7, 1.8)
-    SPRAY.append((math.cos(ang) * spd, math.sin(ang) * spd, _srng.randrange(F)))
-SPRAY_LIFE = 5
+def place_clawd(g, f):
+    # rotate the whole Clawd+board assembly down the face, with a gentle rock
+    ang = ANGLE + ROCK * math.sin(2*math.pi * f / F)
+    R = rotated(ang)
+    rh, rw = R.shape
+    ax, ay = contact_point(f)
+    y0 = int(round(ay)) - rh // 2
+    x0 = int(round(ax)) - rw // 2
+    ys, xs = np.nonzero(R)
+    for ry, rx in zip(ys, xs):
+        wy, wx = y0 + ry, x0 + rx
+        if 0 <= wy < N and 0 <= wx < N:
+            g[wy, wx] = R[ry, rx]
 
-def paint_spray(g, f):
-    lipx = PEAK_X + 1
-    lipy = surface_row(lipx, f)
-    for vx, vy, start in SPRAY:
+# ---- wake + spray coming off the surfboard ---------------------------
+# The board planes down-left; its tail points up toward the crest, so the
+# spray fans off the tail as a rooster-tail arcing up-and-back (right) into
+# the open air above the wave, where it actually reads.
+TAIL_DX = 13                                        # tail offset from contact (cells)
+_wrng = random.Random(71)
+WAKE = []                                           # (vx, vy, start-frame)
+for _ in range(30):
+    vx =  _wrng.uniform(-0.2, 1.7)                  # mostly back/right, a little spill forward
+    vy = -_wrng.uniform(1.1, 2.6)                   # strong upward launch
+    WAKE.append((vx, vy, _wrng.randrange(F)))
+WAKE_LIFE = 7
+WAKE_G = 0.13                                       # gravity on the arc
+
+def paint_wake_churn(g, f):
+    """Foam churn where the tail carves the water -- a short trail up the face
+    behind the board. Drawn *before* Clawd so he planes over it."""
+    ax, _ = contact_point(f)
+    for k in range(1, 10):
+        x = int(round(ax)) + 3 + k
+        y = int(round(surface_row(x, f))) - 1
+        # seamless flicker: fn of k and (f mod F); trail thins as it trails off
+        if 0 <= x < N and 0 <= y < N and \
+                math.sin(k * 1.9 + 2*math.pi * f / F) > -0.15 + 0.07 * k:
+            g[y, x] = FOAM
+
+def paint_wake_spray(g, f):
+    """Rooster-tail spray fanning off the board's tail, arcing up-and-back
+    then falling. Drawn *after* Clawd so it reads as spray in front."""
+    ax, _ = contact_point(f)
+    ox = ax + TAIL_DX
+    oy = surface_row(ox, f) - 1                      # launch from the tail/crest
+    for vx, vy, start in WAKE:
         t = (f - start) % F
-        if t >= SPRAY_LIFE:
+        if t >= WAKE_LIFE:
             continue
-        x = int(round(lipx + vx * t))
-        y = int(round(lipy + vy * t + 0.12 * t * t))   # gravity arc
+        x = int(round(ox + vx * t))
+        y = int(round(oy + vy * t + WAKE_G * t * t))  # gravity arc
         if 0 <= x < N and 0 <= y < N:
             g[y, x] = FOAM
 
@@ -188,8 +240,9 @@ def compose(f):
     g = np.zeros((N, N), dtype=np.uint8)
     paint_ocean(g, f)
     crest_foam(g, f)
+    paint_wake_churn(g, f)          # churn behind the board, under Clawd
     place_clawd(g, f)
-    paint_spray(g, f)
+    paint_wake_spray(g, f)          # airborne spray, over everything
     big = np.kron(g, np.ones((CELL, CELL), dtype=np.uint8))
     im = Image.frombytes("P", (CANVAS, CANVAS), big.tobytes())
     im.putpalette(pal_bytes)

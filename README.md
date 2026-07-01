@@ -85,20 +85,23 @@ tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 (`S·F = P`), and splashes are a pure function of `frame mod F`.
 
 ### Surfing — [`render_surf_anim.py`](scripts/render_surf_anim.py)
-Clawd carving down the face of a breaking wave on a red surfboard, four
-composited layers (ocean → board → Clawd → foam/spray):
+Clawd dropping down the face of a breaking wave on a red surfboard, composited
+back-to-front (ocean → crest foam → wake → Clawd+board → spray):
 - **ocean:** a raised swell peaks on the right and slopes down to a flatter sea
   on the left (the face Clawd rides), filled with depth-banded blues and a
-  scrolling sparkle of sunlit glints.
-- **board:** a fat tilted lozenge, nose raised, tapering to points at nose and
-  tail, with a foamy wake spitting off the back.
-- **Clawd:** the sprite (thin 2 px white border) **bobs** on the wave.
-- **foam / spray:** a white cap along the steep breaking lip, plus a spray
-  burst that arcs off the crest under gravity.
+  scrolling sparkle of sunlit glints; a white foam cap breaks along the lip.
+- **Clawd + board:** Clawd (full 2 px white outline) stands on a fat surfboard;
+  the two are built as **one assembly** and **rotated together** so they lean
+  down the face, pivoting about the board's water-contact point. A gentle rock
+  and a vertical bob keep them alive on the wave.
+- **wake / spray:** a foam trail churns off the tail along the water, and a
+  **rooster-tail** of spray fans up off the tail, arcing back over the crest
+  under gravity.
 
-The **loop is seamless by construction**: the bob is `sin(2π·f/F)`; the swell
-ripple and sparkle scroll advance a whole number of cycles over the loop
-(phase `2π·(… − k·f/F)`); the spray is a pure function of `frame mod F`.
+The **loop is seamless by construction**: the bob and the rock are both
+`sin(2π·f/F)`; the swell ripple and sparkle scroll advance a whole number of
+cycles over the loop (phase `2π·(… − k·f/F)`); the wake and spray are pure
+functions of `frame mod F`.
 
 ---
 
