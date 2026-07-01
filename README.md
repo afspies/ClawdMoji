@@ -1,13 +1,13 @@
 # ClawdMoji
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus two
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus three
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
-| Base | "This is fine" 🔥 | Rainy day 🌧️ |
-|:----:|:-----------------:|:-------------:|
-| ![base](emoji/clawd_emoji.png) | ![fire](emoji/clawd_fire.gif) | ![rain](emoji/clawd_rain.gif) |
-| static, transparent | animated, seamless loop | animated, seamless loop |
+| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
+|:----:|:-----------------:|:-------------:|:----------:|
+| ![base](emoji/clawd_emoji.png) | ![fire](emoji/clawd_fire.gif) | ![rain](emoji/clawd_rain.gif) | ![surf](emoji/clawd_surf.gif) |
+| static, transparent | animated, seamless loop | animated, seamless loop | animated, seamless loop |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -84,6 +84,22 @@ Here the **loop is exactly seamless by construction**: rain wraps on a vertical
 tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 (`S·F = P`), and splashes are a pure function of `frame mod F`.
 
+### Surfing — [`render_surf_anim.py`](scripts/render_surf_anim.py)
+Clawd carving down the face of a breaking wave on a red surfboard, four
+composited layers (ocean → board → Clawd → foam/spray):
+- **ocean:** a raised swell peaks on the right and slopes down to a flatter sea
+  on the left (the face Clawd rides), filled with depth-banded blues and a
+  scrolling sparkle of sunlit glints.
+- **board:** a fat tilted lozenge, nose raised, tapering to points at nose and
+  tail, with a foamy wake spitting off the back.
+- **Clawd:** the sprite (thin 2 px white border) **bobs** on the wave.
+- **foam / spray:** a white cap along the steep breaking lip, plus a spray
+  burst that arcs off the crest under gravity.
+
+The **loop is seamless by construction**: the bob is `sin(2π·f/F)`; the swell
+ripple and sparkle scroll advance a whole number of cycles over the loop
+(phase `2π·(… − k·f/F)`); the spray is a pure function of `frame mod F`.
+
 ---
 
 ## Regenerate
@@ -98,17 +114,20 @@ python3 scripts/analyze_grid.py      # prints the recovered grid (writes build/)
 python3 scripts/render_emoji.py      # -> emoji/clawd_emoji*.png
 python3 scripts/render_fire_anim.py  # -> emoji/clawd_fire.gif + still
 python3 scripts/render_rain_anim.py  # -> emoji/clawd_rain.gif + still
+python3 scripts/render_surf_anim.py  # -> emoji/clawd_surf.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
 height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
-splash frequency for rain. `render_fire.py` is the original *static* "this is
-fine" (kept for reference; the animated version supersedes it).
+splash frequency for rain; wave geometry, bob, ripple, and spray for surf.
+`render_fire.py` is the original *static* "this is fine" (kept for reference;
+the animated version supersedes it).
 
 ## Add to Slack
 
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from
-`emoji/`, and give it a name (e.g. `:clawd:`, `:clawd-fine:`, `:clawd-rain:`).
+`emoji/`, and give it a name (e.g. `:clawd:`, `:clawd-fine:`, `:clawd-rain:`,
+`:clawd-surf:`).
 Animated GIFs animate inline.
 
 ## Layout
