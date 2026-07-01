@@ -86,7 +86,7 @@ tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 
 ### Surfing — [`render_surf_anim.py`](scripts/render_surf_anim.py)
 Clawd dropping down the face of a breaking wave on a red surfboard, composited
-back-to-front (ocean → crest foam → Clawd+board+underside spray → rooster-tail).
+back-to-front (ocean → crest foam → Clawd+board → waterline wash + bow-spray).
 Unlike the other emoji this one renders on the **full 128 grid** (`CELL=1`), so
 Clawd is bigger, more central, and his edges/rotation are half the block size —
 noticeably less pixelated:
@@ -95,16 +95,17 @@ noticeably less pixelated:
   scrolling sparkle of sunlit glints; a white foam cap breaks along the lip.
 - **Clawd + board:** Clawd (full 2 px white outline) stands on a fat surfboard;
   the two are built as **one assembly** and **rotated together** so they lean
-  down the face, pivoting about the board's water-contact point. A gentle rock
-  and a vertical bob keep them alive on the wave.
-- **spray:** white water crests the **underside** of the planing board, and a
-  **rooster-tail** fans off the tail — dense dabs at the base thinning to fine
-  tips — arcing up over the crest under gravity.
+  down the face, pivoting about the board's water-contact point. The lean is
+  **matched to the face slope** and the board is **sunk** slightly so it planes
+  *through* the wave rather than floating over it. A gentle rock and a vertical
+  bob keep them alive on the wave.
+- **spray:** a thin bright **foam wash** breaks along the waterline where the
+  board cuts the wave, and a little **bow-spray** kicks up off the nose.
 
-The **loop is seamless by construction**: the bob and the rock are both
-`sin(2π·f/F)`; the swell ripple and sparkle scroll advance a whole number of
-cycles over the loop (phase `2π·(… − k·f/F)`); the underside spray and
-rooster-tail are pure functions of `frame mod F`.
+The **loop is seamless by construction**: the bob, the rock, and the bow-spray's
+flicker are all `sin(2π·f/F)`; the swell ripple and sparkle scroll advance a
+whole number of cycles over the loop (phase `2π·(… − k·f/F)`); the waterline
+wash is a static ragged pattern.
 
 ---
 

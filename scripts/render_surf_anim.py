@@ -16,7 +16,6 @@ and rock are sin(2*pi*f/F), and all foam/spray are pure functions of `f mod F`.
 Outputs clawd_surf_still.png and clawd_surf.gif.
 """
 import math
-import random
 from pathlib import Path
 import numpy as np
 from PIL import Image
@@ -57,15 +56,19 @@ SPARKK = 2          # sparkle-scroll cycles over the loop (seamless)
 # the left; to the right of the peak it breaks back down. Kept short so the
 # crest doesn't tower over Clawd.
 SEA_BASE = 108      # flat-sea surface row on the far left
-PEAK_X   = 98       # column of the crest
+PEAK_X   = 98       # column of the crest (before the WAVE_DX shift)
 PEAK_TOP = 60       # crest row (smaller = higher) -- ~mid-canvas, a low swell
 BACK_END = 92       # surface row at the far-right edge (the broken back)
+WAVE_DX  = 9        # shift the whole swell right (keeps room on the left)
 
 def base_surface(x):
-    if x <= PEAK_X:
-        t = (x / PEAK_X) ** 1.7                       # gentle then steeper face
+    xe = x - WAVE_DX
+    if xe <= 0:
+        return SEA_BASE                               # flat sea to the left
+    if xe <= PEAK_X:
+        t = (xe / PEAK_X) ** 1.7                      # gentle then steeper face
         return SEA_BASE + (PEAK_TOP - SEA_BASE) * t
-    t = (x - PEAK_X) / (N - 1 - PEAK_X)               # break behind the peak
+    t = (xe - PEAK_X) / (N - 1 - PEAK_X)              # break behind the peak
     return PEAK_TOP + (BACK_END - PEAK_TOP) * (t ** 0.7)
 
 def surface_row(x, f):
@@ -79,9 +82,10 @@ ART = [
 ]
 SCALE = 7                        # art-cell size in grid cells (12x8 -> 84x56)
 SX, SY = 12*SCALE, 8*SCALE
-RIDE_X = 55                      # board water-contact column (centred on the face)
-ANGLE  = 22                      # base lean down the face (degrees)
+RIDE_X = 64                      # board water-contact column (shifted right)
+ANGLE  = 26                      # base lean, ~matched to the wave-face slope
 ROCK   = 3.0                     # gentle rocking amplitude (degrees, seamless)
+SINK   = 1                       # nudge the board down so its underside cuts the water
 
 
 def build_assembly():
@@ -89,7 +93,7 @@ def build_assembly():
     out flat in a padded local canvas. Returns the index array plus the board's
     underside-centre cell -- the point that rides the water and that the whole
     assembly rotates about."""
-    PAD, BOARD_TH = 10, 4        # PAD leaves room for outline + board overhang
+    PAD, BOARD_TH = 12, 5        # PAD leaves room for outline + board overhang
     W = SX + 2*PAD
     H = SY + BOARD_TH + 2*PAD
     A = np.zeros((H, W), dtype=np.uint8)
@@ -123,11 +127,12 @@ def build_assembly():
         x = bcx + dx
         if not (0 <= x < W):
             continue
-        thick = BOARD_TH if abs(frac) < 0.6 else (2 if abs(frac) < 0.85 else 1)
+        thick = BOARD_TH if abs(frac) < 0.62 else (3 if abs(frac) < 0.86 else 1)
         for t in range(thick):
             yy = deck + t
             if 0 <= yy < H:
-                A[yy, x] = STRIPE if (t in (1, 2) and abs(frac) < 0.62) else BOARD
+                # bright stripe down the middle of the deck so the board reads
+                A[yy, x] = STRIPE if (t in (2, 3) and abs(frac) < 0.7) else BOARD
     return A, (deck + BOARD_TH - 1, bcx)     # contact = board underside centre
 
 
@@ -183,9 +188,10 @@ def crest_foam(g, f):
 
 
 def contact_point(f):
-    """World cell the board rides, this frame (surface at RIDE_X + bob)."""
+    """World cell the board rides this frame: surface at RIDE_X, plus bob, plus
+    SINK so the board digs into the wave rather than floating over it."""
     bob = BOB * math.sin(2*math.pi * f / F)
-    return RIDE_X, surface_row(RIDE_X, f) + bob
+    return RIDE_X, surface_row(RIDE_X, f) + bob + SINK
 
 def place_clawd(g, f):
     # rotate the whole Clawd+board assembly down the face, with a gentle rock
@@ -195,67 +201,42 @@ def place_clawd(g, f):
     ax, ay = contact_point(f)
     y0 = int(round(ay)) - rh // 2
     x0 = int(round(ax)) - rw // 2
-    # white water cresting the underside of the board: a ragged foam fringe
-    # clinging just below the board, shimmering as the board planes.
-    board = (R == BOARD) | (R == STRIPE)
-    under = np.zeros_like(board)
-    under[1:, :] |= board[:-1, :]
-    under[2:, :] |= board[:-2, :]
-    under[3:, 1:] |= board[:-3, :-1]                 # a touch of forward spill
-    under &= ~(R > 0)
-    uy, ux = np.nonzero(under)
-    for ry, rx in zip(uy, ux):
-        if math.sin(rx * 0.5 + 2*math.pi * f / F) > -0.25:   # seamless shimmer
-            wy, wx = y0 + ry, x0 + rx
-            if 0 <= wy < N and 0 <= wx < N:
-                g[wy, wx] = FOAM
-    # the assembly itself, on top
+    # draw the assembly, remembering which world columns the board covers
+    board_cols = set()
     ys, xs = np.nonzero(R)
     for ry, rx in zip(ys, xs):
         wy, wx = y0 + ry, x0 + rx
         if 0 <= wy < N and 0 <= wx < N:
             g[wy, wx] = R[ry, rx]
-
-# ---- wake + spray coming off the surfboard ---------------------------
-# The board planes down-left; its tail points up toward the crest, so the
-# spray fans off the tail as a rooster-tail arcing up-and-back (right) into
-# the open air above the wave, where it actually reads.
-TAIL_DX = 37                                        # tail-tip offset from contact (cells)
-_wrng = random.Random(71)
-WAKE = []                                           # (vx, vy, start-frame)
-for _ in range(64):
-    vx =  _wrng.uniform(-0.6, 3.2)                  # mostly back/right, a little spill forward
-    vy = -_wrng.uniform(2.6, 6.0)                   # strong upward launch -> clears the crest
-    WAKE.append((vx, vy, _wrng.randrange(F)))
-WAKE_LIFE = 8
-WAKE_G = 0.24                                       # gravity on the arc
-
-def paint_wake_spray(g, f):
-    """Rooster-tail spray fanning off the board's tail, arcing up-and-back
-    then falling. Drawn *after* Clawd so it reads as spray in front."""
-    ax, _ = contact_point(f)
-    ox = ax + TAIL_DX
-    oy = surface_row(ox, f) - 1                      # launch from the tail/crest
-    for vx, vy, start in WAKE:
-        t = (f - start) % F
-        if t >= WAKE_LIFE:
-            continue
-        x = int(round(ox + vx * t))
-        y = int(round(oy + vy * t + WAKE_G * t * t))  # gravity arc
-        # dense little dabs at the base of the tail, thinning to 1px tips
-        dabs = [(0, 0)] if t >= 4 else [(0, 0), (1, 0), (0, 1)]
-        for dx, dy in dabs:
-            xx, yy = x + dx, y + dy
-            if 0 <= xx < N and 0 <= yy < N:
-                g[yy, xx] = FOAM
+            if R[ry, rx] in (BOARD, STRIPE):
+                board_cols.add(wx)
+    # a thin bright foam wash right at the waterline where the board cuts the
+    # wave -> the board reads as planing *through* the water, not floating over.
+    for wx in board_cols:
+        s = int(round(surface_row(wx, f)))
+        for yy in (s, s + 1):
+            if 0 <= yy < N and (wx * 3 + f * 5) % 5 != 0:        # ragged, seamless
+                if g[yy, wx] in (BOARD, STRIPE, W_L, W_M, W_D):  # not Clawd's body
+                    g[yy, wx] = FOAM
+    # bow-spray kicking up off the water where the board's nose cuts in
+    if board_cols:
+        nose_x = min(board_cols)
+        for k in range(9):
+            wx = nose_x + k
+            s = surface_row(wx, f)
+            wobble = 0.5 + 0.5 * math.sin(k * 0.8 + 2*math.pi * f / F)  # seamless
+            h = int((2 + 4 * wobble) * (1 - k / 11))                    # tallest at the nose
+            for up in range(h):
+                yy = int(round(s)) - 1 - up
+                if 0 <= yy < N and 0 <= wx < N and g[yy, wx] in (T, W_L, W_M, W_D):
+                    g[yy, wx] = FOAM
 
 # ---- compose one frame ----------------------------------------------
 def compose(f):
     g = np.zeros((N, N), dtype=np.uint8)
     paint_ocean(g, f)
     crest_foam(g, f)
-    place_clawd(g, f)               # incl. underside spray, under the assembly
-    paint_wake_spray(g, f)          # airborne rooster-tail, over everything
+    place_clawd(g, f)               # assembly + waterline wash + bow-spray
     if CELL == 1:
         big = g
     else:
