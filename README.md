@@ -1,14 +1,14 @@
 # ClawdMoji
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus five
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus six
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
 | Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| **Mariachi 🪇** | **Bug catcher 🦋** |  |  |
-| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) |  |  |
+| **Mariachi 🪇** | **Bug catcher 🦋** | **Robin Hood 🏹** |  |
+| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) |  |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -157,6 +157,34 @@ butterfly path is `sin`/`sin(2·)` of `2π·f/F`, the wing flap is `cos(2π·3f/
 and `f=F`. Because the field fills the whole square, the GIF is written as full
 opaque frames (`disposal=1`, no transparency) so nothing flickers.
 
+### Robin Hood — [`robinhood/render.py`](emoji/robinhood/render.py)
+A cute forest archer: Clawd in a pointed feathered cap and a green tunic
+(belt + buckle, zig-zag hem, little boots), a quiver slung across his back,
+drawing a bow and loosing an arrow that streaks off to the right — over and over.
+Full 128 grid (`CELL=1`) so the bow curve, the string and the arrow stay crisp, and
+drawn **large** so Clawd fills most of the frame — the bow tucks against the right
+edge, so the loosed arrow has only a short run (the whoosh sells it). Every pixel
+constant is a multiple of `SCALE` (`sc(v) = round(v·SCALE/6)`), so bumping `SCALE`
+rescales the whole archer coherently:
+- **body + cap:** Clawd (full 2 px white outline) recoloured into the tunic, with
+  a flop-back cap, a brown hatband and a red feather.
+- **his own arms:** Clawd's side bumps (the wide `ART` rows 2–3) *are* his arms.
+  The **right** one reaches the bow — a short forearm joins it to the grip, which
+  sits inboard against his hand rather than way out at arm's length. The **left**
+  one bends up-and-in so the fist draws the string to his cheek (a diagonal line,
+  never a bar across the face).
+- **bow:** a wooden bow, a single **static** piece — the whole shot happens on the
+  string, so nothing has to rotate.
+- **shot:** the left arm draws the **string + nocked arrow** to full, looses with a
+  forward **snap + twang**, and the arrow streaks off to the right (**head first**,
+  fletching trailing, with a little **whoosh**) before a fresh arrow is nocked.
+
+The **loop is seamless by construction**: full-draw (the aim) is identical at
+`f=0` and `f=F`; on release the string snaps forward and a **damped return**
+(`(1−smoothstep)·(1+sin)`) brings it back to the draw by the last frame, and the
+loosed arrow clears the right edge before the loop wraps — so only a fresh nocked
+arrow re-appears, the natural "re-load" beat.
+
 ---
 
 ## Regenerate
@@ -174,13 +202,15 @@ python3 emoji/rain/render.py        # -> emoji/rain/clawd_rain.gif + still
 python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
 python3 emoji/mariachi/render.py    # -> emoji/mariachi/clawd_mariachi.gif + still
 python3 emoji/bugcatcher/render.py  # -> emoji/bugcatcher/clawd_bugcatcher.gif + still
+python3 emoji/robinhood/render.py   # -> emoji/robinhood/clawd_robinhood.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
 height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
 splash frequency for rain; wave geometry, bob, ripple, and spray for surf;
 sway/hop/tilt and the sombrero + maraca geometry for mariachi; the net swing,
-butterfly flutter, and helmet/net/field geometry for bug catcher.
+butterfly flutter, and helmet/net/field geometry for bug catcher; the draw/release
+timing, arrow speed, and bow/cap/tunic geometry for Robin Hood.
 [`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
 *static* "this is fine" (kept for reference; the animated version supersedes it).
 
@@ -189,7 +219,7 @@ butterfly flutter, and helmet/net/field geometry for bug catcher.
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
 relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
 `:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`,
-`:clawd-bugcatcher:`). Animated GIFs animate inline.
+`:clawd-bugcatcher:`, `:clawd-robinhood:`). Animated GIFs animate inline.
 
 ## Layout
 
@@ -207,6 +237,7 @@ ClawdMoji/
 │   ├── rain/         render.py + clawd_rain.gif/still
 │   ├── surf/         render.py + clawd_surf.gif/still
 │   ├── mariachi/     render.py + clawd_mariachi.gif/still
-│   └── bugcatcher/   render.py + clawd_bugcatcher.gif/still
+│   ├── bugcatcher/   render.py + clawd_bugcatcher.gif/still
+│   └── robinhood/    render.py + clawd_robinhood.gif/still
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
