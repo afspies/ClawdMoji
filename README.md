@@ -1,13 +1,13 @@
 # ClawdMoji
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus three
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus four
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
-| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
-|:----:|:-----------------:|:-------------:|:----------:|
-| ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| static, transparent | animated, seamless loop | animated, seamless loop | animated, seamless loop |
+| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 | Mariachi 🪇 |
+|:----:|:-----------------:|:-------------:|:----------:|:----------:|
+| ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) | ![mariachi](emoji/mariachi/clawd_mariachi.gif) |
+| static, transparent | animated, seamless loop | animated, seamless loop | animated, seamless loop | animated, seamless loop |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -113,6 +113,24 @@ whole number of cycles over the loop (phase `2π·(… − k·f/F)`); the crest 
 is a pure function of `frame mod F`; the waterline wash is a static ragged
 pattern.
 
+### Mariachi — [`mariachi/render.py`](emoji/mariachi/render.py)
+Clawd in a big straw sombrero, a maraca raised in each hand, dancing. Like surf
+it renders on the **full 128 grid** (`CELL=1`) so the sombrero's curves and the
+round maraca bulbs stay crisp:
+- **assembly:** Clawd (full 2 px white outline), a wide sombrero (rounded straw
+  crown, red band with gold studs, up-curled brim, bolita trim), and two gold
+  maracas are drawn as **one rigid figure**, so the whole thing dances together.
+- **dance:** the figure **sways** side to side, **hops** (two little bounces per
+  loop) and **tilts**, pivoting about the hips — swinging the raised maracas
+  like a cha-cha.
+- **flair:** short white **shake-lines** flick off the outer edge of each maraca
+  bulb (anchored to the bulbs' rotated positions), and a couple of gold **music
+  notes** bob overhead.
+
+The **loop is seamless by construction**: the sway and tilt are `sin(2π·f/F)`,
+the hop is `|sin(2π·f/F)|` (equal at `f=0` and `f=F`), and the note bob and
+shake-lines are `sin`/`cos` of `2π·f/F`.
+
 ---
 
 ## Regenerate
@@ -128,11 +146,13 @@ python3 emoji/base/render.py        # -> emoji/base/clawd_emoji*.png
 python3 emoji/fire/render.py        # -> emoji/fire/clawd_fire.gif + still
 python3 emoji/rain/render.py        # -> emoji/rain/clawd_rain.gif + still
 python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
+python3 emoji/mariachi/render.py    # -> emoji/mariachi/clawd_mariachi.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
 height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
-splash frequency for rain; wave geometry, bob, ripple, and spray for surf.
+splash frequency for rain; wave geometry, bob, ripple, and spray for surf;
+sway/hop/tilt and the sombrero + maraca geometry for mariachi.
 [`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
 *static* "this is fine" (kept for reference; the animated version supersedes it).
 
@@ -140,7 +160,7 @@ splash frequency for rain; wave geometry, bob, ripple, and spray for surf.
 
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
 relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
-`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`).
+`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`).
 Animated GIFs animate inline.
 
 ## Layout
@@ -157,6 +177,7 @@ ClawdMoji/
 │   ├── base/         render.py + clawd_emoji*.png
 │   ├── fire/         render.py (+ render_static.py) + clawd_fire.gif/still
 │   ├── rain/         render.py + clawd_rain.gif/still
-│   └── surf/         render.py + clawd_surf.gif/still
+│   ├── surf/         render.py + clawd_surf.gif/still
+│   └── mariachi/     render.py + clawd_mariachi.gif/still
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
