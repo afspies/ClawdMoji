@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-"""'Surfing' Clawd -- layered, composited at 128px:
+"""'Surfing' Clawd -- layered, composited at 128px (full 128 grid, CELL=1, so
+edges/rotation are half the block size of the other emoji -> less pixelated):
 
-  ocean       : a big cresting wave; a raised swell peaks on the right and
-                slopes down to a flatter sea on the left (the face Clawd rides).
-                Filled with depth-banded blues + a scrolling sparkle texture.
-  board       : a tilted red surfboard (nose up on the downhill side).
-  Clawd       : sprite + thin 2px white border, bobbing on the wave.
-  foam / spray: white crest foam along the steep lip + flickering flecks and a
-                spray burst off the wave lip.
+  ocean       : a raised swell peaks on the right and slopes down to a flatter
+                sea on the left (the face Clawd rides). Depth-banded blues +
+                a scrolling sparkle, capped by white foam along the breaking lip.
+  Clawd+board : Clawd (full 2px white outline) on a red surfboard, built as ONE
+                assembly and rotated together so they drop down the face.
+  spray       : white water cresting the board's underside, plus a rooster-tail
+                fanning off the tail over the crest.
 
-Seamless by construction: everything periodic in `f` over F frames --
-the swell ripple and sparkle scroll use phase 2*pi*(... - k*f/F) with integer
-k, the bob is sin(2*pi*f/F), and foam/spray are pure functions of `f mod F`.
+Seamless by construction: everything periodic in `f` over F frames -- the swell
+ripple and sparkle scroll use phase 2*pi*(... - k*f/F) with integer k, the bob
+and rock are sin(2*pi*f/F), and all foam/spray are pure functions of `f mod F`.
 Outputs clawd_surf_still.png and clawd_surf.gif.
 """
 import math
@@ -22,7 +23,7 @@ from PIL import Image
 
 OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
 
-N, CELL = 64, 2
+N, CELL = 128, 1
 CANVAS = N * CELL   # 128
 
 # ---- palette ----------------------------------------------------------
@@ -44,26 +45,27 @@ pal_bytes = bytes([c for rgb in COLORS for c in rgb] + [0]*(768 - 3*len(COLORS))
 # ---- timing / motion --------------------------------------------------
 F      = 12         # frames in the loop
 DUR    = 90         # ms/frame
-BOB    = 1.6        # Clawd vertical bob amplitude (cells)
-LAMBDA = 22.0       # swell ripple wavelength (cells)
-RIPPLE = 1.4        # swell ripple amplitude (cells)
+BOB    = 2.6        # Clawd vertical bob amplitude (cells)
+LAMBDA = 46.0       # swell ripple wavelength (cells)
+RIPPLE = 2.4        # swell ripple amplitude (cells)
 RIPK   = 1          # ripple cycles advanced over the loop (seamless)
 SPARKK = 2          # sparkle-scroll cycles over the loop (seamless)
 
 # ---- wave geometry ----------------------------------------------------
 # Water surface row as a function of column x (rows: 0 top .. N-1 bottom).
-# A raised swell peaks near PEAK_X and slopes down to a flatter sea on the
-# left; to the right of the peak it breaks steeply back down.
-SEA_BASE = 48       # flat-sea surface row on the far left
-PEAK_X   = 47       # column of the crest
-PEAK_TOP = 11       # crest row (smaller = higher)
-BACK_END = 24       # surface row at the far-right edge (the broken back)
+# A gentle raised swell peaks near PEAK_X and slopes down to a flatter sea on
+# the left; to the right of the peak it breaks back down. Kept short so the
+# crest doesn't tower over Clawd.
+SEA_BASE = 108      # flat-sea surface row on the far left
+PEAK_X   = 98       # column of the crest
+PEAK_TOP = 60       # crest row (smaller = higher) -- ~mid-canvas, a low swell
+BACK_END = 92       # surface row at the far-right edge (the broken back)
 
 def base_surface(x):
     if x <= PEAK_X:
-        t = (x / PEAK_X) ** 1.7                       # gentle then steep face
+        t = (x / PEAK_X) ** 1.7                       # gentle then steeper face
         return SEA_BASE + (PEAK_TOP - SEA_BASE) * t
-    t = (x - PEAK_X) / (N - 1 - PEAK_X)               # steep break behind peak
+    t = (x - PEAK_X) / (N - 1 - PEAK_X)               # break behind the peak
     return PEAK_TOP + (BACK_END - PEAK_TOP) * (t ** 0.7)
 
 def surface_row(x, f):
@@ -75,19 +77,19 @@ ART = [
     "..########..", "..#O####O#..", "############", "############",
     "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#..",
 ]
-SCALE = 3
-SX, SY = 12*SCALE, 8*SCALE       # 36 x 24
-RIDE_X = 29                      # board water-contact column (on the left face)
+SCALE = 7                        # art-cell size in grid cells (12x8 -> 84x56)
+SX, SY = 12*SCALE, 8*SCALE
+RIDE_X = 55                      # board water-contact column (centred on the face)
 ANGLE  = 22                      # base lean down the face (degrees)
 ROCK   = 3.0                     # gentle rocking amplitude (degrees, seamless)
 
 
 def build_assembly():
-    """Clawd (with a full 2px white outline) standing on a fat surfboard,
-    laid out flat in a padded local canvas. Returns the index array plus the
-    board's underside-centre cell -- the point that rides the water and that
-    the whole assembly rotates about."""
-    PAD, BOARD_TH = 6, 3         # PAD leaves room for the outline + board overhang
+    """Clawd (with a full 2px white outline) standing on a fat surfboard, laid
+    out flat in a padded local canvas. Returns the index array plus the board's
+    underside-centre cell -- the point that rides the water and that the whole
+    assembly rotates about."""
+    PAD, BOARD_TH = 10, 4        # PAD leaves room for outline + board overhang
     W = SX + 2*PAD
     H = SY + BOARD_TH + 2*PAD
     A = np.zeros((H, W), dtype=np.uint8)
@@ -98,11 +100,13 @@ def build_assembly():
                 continue
             A[oy+j*SCALE:oy+(j+1)*SCALE, ox+i*SCALE:ox+(i+1)*SCALE] = \
                 EYE if ch == "O" else CLAWD
-    # white outline -- the PAD gives the dilation room on every side (incl. top)
+    # white outline -- 2px thick; PAD gives the dilation room on every side
     body = (A == CLAWD) | (A == EYE)
     border = np.zeros_like(body)
-    for dy in (-1, 0, 1):
-        for dx in (-1, 0, 1):
+    for dy in range(-2, 3):
+        for dx in range(-2, 3):
+            if dy*dy + dx*dx > 5:                     # roughly circular 2px pen
+                continue
             sh = np.zeros_like(body)
             ys = slice(max(0, dy), H+min(0, dy)); xs = slice(max(0, dx), W+min(0, dx))
             yt = slice(max(0, -dy), H+min(0, -dy)); xt = slice(max(0, -dx), W+min(0, -dx))
@@ -113,17 +117,17 @@ def build_assembly():
     feet_row = oy + SY - 1
     bcx = ox + SX // 2
     deck = feet_row + 1
-    half = SX // 2 + 4
+    half = SX // 2 + 6
     for dx in range(-half, half + 1):
         frac = dx / half
         x = bcx + dx
         if not (0 <= x < W):
             continue
-        thick = 3 if abs(frac) < 0.55 else (2 if abs(frac) < 0.82 else 1)
+        thick = BOARD_TH if abs(frac) < 0.6 else (2 if abs(frac) < 0.85 else 1)
         for t in range(thick):
             yy = deck + t
             if 0 <= yy < H:
-                A[yy, x] = STRIPE if (t == 1 and abs(frac) < 0.62) else BOARD
+                A[yy, x] = STRIPE if (t in (1, 2) and abs(frac) < 0.62) else BOARD
     return A, (deck + BOARD_TH - 1, bcx)     # contact = board underside centre
 
 
@@ -143,23 +147,25 @@ CENTERED = _center_on(ASSEMBLY, CY, CX)
 
 
 def rotated(angle_deg):
-    im = Image.fromarray(CENTERED, mode="P")
+    im = Image.new("P", (CENTERED.shape[1], CENTERED.shape[0]))
     im.putpalette(pal_bytes)
+    im.frombytes(CENTERED.tobytes())
     r = im.rotate(angle_deg, resample=Image.NEAREST, expand=True, fillcolor=0)
     return np.asarray(r)                      # expand keeps the pivot at centre
+
 
 def paint_ocean(g, f):
     for x in range(N):
         s = int(round(surface_row(x, f)))
         for y in range(max(0, s), N):
             d = y - s
-            if d <= 1:      c = W_L               # bright lip just under surface
-            elif d <= 6:    c = W_M
+            if d <= 2:      c = W_L               # bright lip just under surface
+            elif d <= 13:   c = W_M
             else:           c = W_D
             # scrolling sparkle: sparse glints drifting along the swell
-            ph = (math.sin(2*math.pi * (x / 5.0 - SPARKK * f / F))
-                  * math.sin(x * 1.7 + y * 2.3))
-            if d >= 3 and ph > 0.88:
+            ph = (math.sin(2*math.pi * (x / 9.0 - SPARKK * f / F))
+                  * math.sin(x * 0.9 + y * 1.2))
+            if d >= 5 and ph > 0.9:
                 c = W_L
             g[y, x] = c
 
@@ -169,11 +175,12 @@ def crest_foam(g, f):
         s0 = surface_row(x - 1, f); s1 = surface_row(x, f)
         slope = abs(s1 - s0)
         s = int(round(s1))
-        near_peak = abs(x - PEAK_X) <= 6
-        if (slope > 0.6 or near_peak) and 0 <= s < N:
-            depth = 3 if slope > 1.1 else 2         # thicker foam on the steepest part
+        near_peak = abs(x - PEAK_X) <= 12
+        if (slope > 0.35 or near_peak) and 0 <= s < N:
+            depth = 5 if slope > 0.7 else 3          # thicker foam on the steepest part
             for y in range(max(0, s), min(N, s + depth)):
                 g[y, x] = FOAM
+
 
 def contact_point(f):
     """World cell the board rides, this frame (surface at RIDE_X + bob)."""
@@ -188,6 +195,21 @@ def place_clawd(g, f):
     ax, ay = contact_point(f)
     y0 = int(round(ay)) - rh // 2
     x0 = int(round(ax)) - rw // 2
+    # white water cresting the underside of the board: a ragged foam fringe
+    # clinging just below the board, shimmering as the board planes.
+    board = (R == BOARD) | (R == STRIPE)
+    under = np.zeros_like(board)
+    under[1:, :] |= board[:-1, :]
+    under[2:, :] |= board[:-2, :]
+    under[3:, 1:] |= board[:-3, :-1]                 # a touch of forward spill
+    under &= ~(R > 0)
+    uy, ux = np.nonzero(under)
+    for ry, rx in zip(uy, ux):
+        if math.sin(rx * 0.5 + 2*math.pi * f / F) > -0.25:   # seamless shimmer
+            wy, wx = y0 + ry, x0 + rx
+            if 0 <= wy < N and 0 <= wx < N:
+                g[wy, wx] = FOAM
+    # the assembly itself, on top
     ys, xs = np.nonzero(R)
     for ry, rx in zip(ys, xs):
         wy, wx = y0 + ry, x0 + rx
@@ -198,27 +220,15 @@ def place_clawd(g, f):
 # The board planes down-left; its tail points up toward the crest, so the
 # spray fans off the tail as a rooster-tail arcing up-and-back (right) into
 # the open air above the wave, where it actually reads.
-TAIL_DX = 13                                        # tail offset from contact (cells)
+TAIL_DX = 37                                        # tail-tip offset from contact (cells)
 _wrng = random.Random(71)
 WAKE = []                                           # (vx, vy, start-frame)
-for _ in range(30):
-    vx =  _wrng.uniform(-0.2, 1.7)                  # mostly back/right, a little spill forward
-    vy = -_wrng.uniform(1.1, 2.6)                   # strong upward launch
+for _ in range(64):
+    vx =  _wrng.uniform(-0.6, 3.2)                  # mostly back/right, a little spill forward
+    vy = -_wrng.uniform(2.6, 6.0)                   # strong upward launch -> clears the crest
     WAKE.append((vx, vy, _wrng.randrange(F)))
-WAKE_LIFE = 7
-WAKE_G = 0.13                                       # gravity on the arc
-
-def paint_wake_churn(g, f):
-    """Foam churn where the tail carves the water -- a short trail up the face
-    behind the board. Drawn *before* Clawd so he planes over it."""
-    ax, _ = contact_point(f)
-    for k in range(1, 10):
-        x = int(round(ax)) + 3 + k
-        y = int(round(surface_row(x, f))) - 1
-        # seamless flicker: fn of k and (f mod F); trail thins as it trails off
-        if 0 <= x < N and 0 <= y < N and \
-                math.sin(k * 1.9 + 2*math.pi * f / F) > -0.15 + 0.07 * k:
-            g[y, x] = FOAM
+WAKE_LIFE = 8
+WAKE_G = 0.24                                       # gravity on the arc
 
 def paint_wake_spray(g, f):
     """Rooster-tail spray fanning off the board's tail, arcing up-and-back
@@ -232,18 +242,24 @@ def paint_wake_spray(g, f):
             continue
         x = int(round(ox + vx * t))
         y = int(round(oy + vy * t + WAKE_G * t * t))  # gravity arc
-        if 0 <= x < N and 0 <= y < N:
-            g[y, x] = FOAM
+        # dense little dabs at the base of the tail, thinning to 1px tips
+        dabs = [(0, 0)] if t >= 4 else [(0, 0), (1, 0), (0, 1)]
+        for dx, dy in dabs:
+            xx, yy = x + dx, y + dy
+            if 0 <= xx < N and 0 <= yy < N:
+                g[yy, xx] = FOAM
 
 # ---- compose one frame ----------------------------------------------
 def compose(f):
     g = np.zeros((N, N), dtype=np.uint8)
     paint_ocean(g, f)
     crest_foam(g, f)
-    paint_wake_churn(g, f)          # churn behind the board, under Clawd
-    place_clawd(g, f)
-    paint_wake_spray(g, f)          # airborne spray, over everything
-    big = np.kron(g, np.ones((CELL, CELL), dtype=np.uint8))
+    place_clawd(g, f)               # incl. underside spray, under the assembly
+    paint_wake_spray(g, f)          # airborne rooster-tail, over everything
+    if CELL == 1:
+        big = g
+    else:
+        big = np.kron(g, np.ones((CELL, CELL), dtype=np.uint8))
     im = Image.frombytes("P", (CANVAS, CANVAS), big.tobytes())
     im.putpalette(pal_bytes)
     return im
