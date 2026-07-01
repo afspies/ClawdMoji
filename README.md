@@ -114,22 +114,22 @@ is a pure function of `frame mod F`; the waterline wash is a static ragged
 pattern.
 
 ### Mariachi — [`mariachi/render.py`](emoji/mariachi/render.py)
-Clawd in a big straw sombrero, a maraca raised in each hand, dancing. Like surf
-it renders on the **full 128 grid** (`CELL=1`) so the sombrero's curves and the
-round maraca bulbs stay crisp:
-- **assembly:** Clawd (full 2 px white outline), a wide sombrero (rounded straw
-  crown, red band with gold studs, up-curled brim, bolita trim), and two gold
-  maracas are drawn as **one rigid figure**, so the whole thing dances together.
-- **dance:** the figure **sways** side to side, **hops** (two little bounces per
-  loop) and **tilts**, pivoting about the hips — swinging the raised maracas
-  like a cha-cha.
-- **flair:** short white **shake-lines** flick off the outer edge of each maraca
-  bulb (anchored to the bulbs' rotated positions), and a couple of gold **music
-  notes** bob overhead.
+Clawd in a big straw sombrero, gripping a maraca by the handle in each hand and
+shaking them as he dances. Like surf it renders on the **full 128 grid**
+(`CELL=1`) so the sombrero's curves and the round bulbs stay crisp:
+- **body + hat:** Clawd (full 2 px white outline) and a wide sombrero (rounded
+  straw crown, red band with gold studs, up-curled brim, bolita trim) are one
+  rigid piece that **steps left↔right** with a little bounce.
+- **arms:** each arm is built as its **own piece** — an orange arm whose hand
+  grips a maraca by the **handle**, bulb on the far end — and is **rotated about
+  the shoulder** so the maracas visibly **shake**. The two arms are mirror
+  images rotated by the same angle, so they alternate (one up, one down) for a
+  cha-cha feel.
+- **flair:** a couple of gold **music notes** bob overhead.
 
-The **loop is seamless by construction**: the sway and tilt are `sin(2π·f/F)`,
-the hop is `|sin(2π·f/F)|` (equal at `f=0` and `f=F`), and the note bob and
-shake-lines are `sin`/`cos` of `2π·f/F`.
+The **loop is seamless by construction**: the side-step is `sin(2π·f/F)`, the
+bounce is `|sin(2π·f/F)|`, the maraca shake is `sin(2π·2f/F)` (two shakes per
+loop) and the note bob is `sin`/`cos` of `2π·f/F` — all equal at `f=0` and `f=F`.
 
 ---
 

@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-"""'Mariachi' Clawd -- Clawd in a big straw sombrero, a maraca raised in each
-hand, dancing. Rendered on the full 128 grid (CELL=1) like the surf emoji so
-the sombrero curves and maraca bulbs stay crisp.
+"""'Mariachi' Clawd -- Clawd in a big straw sombrero, gripping a maraca by the
+handle in each hand and shaking them as he steps side to side. Rendered on the
+full 128 grid (CELL=1) like surf so the sombrero curves and round bulbs stay crisp.
 
-  assembly    : Clawd (full 2px white outline) + sombrero + two maracas, built
-                as ONE rigid figure so the whole thing dances together.
-  dance        : the figure sways side to side, hops (two little bounces per
-                loop) and tilts, pivoting about the hips -- swinging the raised
-                maracas like a cha-cha.
-  flair        : short motion ticks flick off the shaking maraca bulbs and a
-                couple of music notes bob overhead.
+  body + hat  : Clawd (full 2px white outline) + a wide sombrero, built as one
+                rigid piece that steps left<->right with a little bounce.
+  arms        : each arm (orange) grips a maraca by its handle, bulb on the far
+                end. Built as its own piece and *rotated about the shoulder* so
+                the maracas visibly shake -- twice per loop.
+  flair        : a couple of gold music notes bob overhead.
 
-Seamless by construction: sway and tilt are sin(2*pi*f/F); the hop is
-|sin(2*pi*f/F)| (two bounces, equal at f=0 and f=F); the note bob and the
-maraca ticks are sin/cos of 2*pi*f/F. Outputs clawd_mariachi_still.png and .gif.
+Seamless by construction: the side-step is sin(2*pi*f/F), the bounce is
+|sin(2*pi*f/F)|, the maraca shake is sin(2*pi*SHAKEK*f/F) and the note bob is
+sin/cos of 2*pi*f/F -- all equal at f=0 and f=F. Outputs the still + gif.
 """
 import math
 import sys
@@ -49,26 +48,40 @@ COLORS = [
 pal_bytes = bytes([c for rgb in COLORS for c in rgb] + [0]*(768 - 3*len(COLORS)))
 
 # ---- timing / motion --------------------------------------------------
-F     = 12          # frames in the loop
-DUR   = 90          # ms/frame
-SWAY  = 4.0         # horizontal weight-shift (px)
-HOP   = 3.0         # vertical bounce (px, two hops/loop)
-TILT  = 5.0         # body lean amplitude (degrees)
+F      = 12         # frames in the loop
+DUR    = 90         # ms/frame
+STEP   = 7.0        # left<->right travel (px)
+HOP    = 2.5        # bounce (px, two hops/loop)
+SHAKE  = 17.0       # maraca shake amplitude (degrees)
+SHAKEK = 2          # shakes per loop
 
-# ---- figure layout (in the padded assembly canvas) --------------------
+# ---- body + hat layout (in the padded body canvas) --------------------
 SCALE = 6                         # 12x8 art -> 72x48 body
 SX, SY = 12*SCALE, 8*SCALE
-AW, AH = 160, 116                 # assembly canvas
-BX, BY = (AW - SX)//2, 52         # body top-left  (centred x, room for hat above)
+AW, AH = 160, 116                 # body canvas
+BX, BY = (AW - SX)//2, 52         # body top-left
 CX0    = BX + SX//2               # body centre column
+PYB, PXB = BY + SY//2, CX0        # body reference point (hips)
+SHO_L = (BY + 18, CX0 - 20)       # shoulders (where the arms attach), body coords
+SHO_R = (BY + 18, CX0 + 20)
+
+# world placement of the body reference (keeps the dancer centred)
+WPX, WPY = 64, 74
+
+# ---- arm + maraca geometry --------------------------------------------
+ARM_ANG  = 10       # rest angle above horizontal (degrees, pointing up-and-out)
+LARM     = 7        # orange upper arm length
+LHANDLE  = 6        # brown handle length (gripped by the hand)
+BULB_R   = 6        # maraca bulb radius
 
 
 def fill_disk(A, cy, cx, r, color):
+    H, W = A.shape
     for dy in range(-r, r+1):
         for dx in range(-r, r+1):
             if dy*dy + dx*dx <= r*r:
                 yy, xx = cy+dy, cx+dx
-                if 0 <= yy < AH and 0 <= xx < AW:
+                if 0 <= yy < H and 0 <= xx < W:
                     A[yy, xx] = color
 
 
@@ -76,132 +89,136 @@ def thick_line(A, y0, x0, y1, x1, r, color):
     steps = int(max(abs(y1-y0), abs(x1-x0))) + 1
     for s in range(steps+1):
         t = s/steps
-        cy, cx = y0 + (y1-y0)*t, x0 + (x1-x0)*t
-        fill_disk(A, int(round(cy)), int(round(cx)), r, color)
+        fill_disk(A, int(round(y0+(y1-y0)*t)), int(round(x0+(x1-x0)*t)), r, color)
+
+
+def draw_bulb(A, cy, cx, r):
+    """A round gold maraca bulb, lit from the upper-left, with festive dots."""
+    H, W = A.shape
+    fill_disk(A, cy, cx, r, GOLD)
+    for dy in range(-r, r+1):                          # shaded far crescent
+        for dx in range(-r, r+1):
+            if dy*dy + dx*dx <= r*r and dx > r*0.28 and dy > -r*0.3:
+                yy, xx = cy+dy, cx+dx
+                if 0 <= yy < H and 0 <= xx < W:
+                    A[yy, xx] = STRAW_D
+    if 0 <= cy - r//2 < H and 0 <= cx - r//2 < W:
+        A[cy - r//2, cx - r//2] = STRAW_L              # sheen
+    for (dy, dx, c) in ((0, 0, RED), (-2, 1, TEAL), (2, -1, RED)):
+        if 0 <= cy+dy < H and 0 <= cx+dx < W:
+            A[cy+dy, cx+dx] = c
 
 
 def draw_sombrero(A):
     """A wide straw sombrero sitting on top of Clawd's head."""
+    H, W = A.shape
     cx = CX0
-    brim_y   = BY - 1          # brim centreline (just above the head top)
+    brim_y   = BY - 1
     crown_h  = 21
     crown_th = 11              # crown half-width at the top
     crown_bh = 15              # crown half-width at the base
     brim_hw  = 50              # brim half-width
-    brim_th  = 4               # brim thickness (vertical)
-    brim_dip = 3               # brim droops this far in the middle (front edge)
-    brim_curl = 6              # brim tips curl up this far
+    brim_th  = 4
+    brim_dip = 3               # brim droops in the middle (front edge)
+    brim_curl = 6              # brim tips curl up
 
-    # crown: a rounded trapezoid rising from the brim
     crown_top = brim_y - crown_h
     for ry in range(crown_top, brim_y + 1):
-        t = (ry - crown_top) / crown_h              # 0 top .. 1 base
+        t = (ry - crown_top) / crown_h
         hw = crown_th + (crown_bh - crown_th) * t
-        if t < 0.30:                                # round the crown's top
+        if t < 0.30:
             hw *= math.sqrt(t / 0.30)
         hw = int(round(hw))
         for dx in range(-hw, hw + 1):
             x = cx + dx
-            if not (0 <= x < AW):
+            if not (0 <= x < W):
                 continue
             frac = dx / max(hw, 1)
             c = STRAW_M
-            if frac < -0.35:   c = STRAW_L          # lit left
-            elif frac > 0.45:  c = STRAW_D          # shaded right
+            if frac < -0.35:   c = STRAW_L
+            elif frac > 0.45:  c = STRAW_D
             A[ry, x] = c
 
-    # brim: wide flattened band, dipping in front and curling up at the tips
     for dx in range(-brim_hw, brim_hw + 1):
         x = cx + dx
-        if not (0 <= x < AW):
+        if not (0 <= x < W):
             continue
         tt = dx / brim_hw
         mid = brim_y + brim_dip * (1 - tt*tt) - brim_curl * (tt*tt)
-        th = brim_th + (1 if abs(tt) > 0.82 else 0)  # slightly fatter, rolled tips
+        th = brim_th + (1 if abs(tt) > 0.82 else 0)
         for k in range(th + 1):
             y = int(round(mid - th/2 + k))
-            if 0 <= y < AH:
-                if k == 0:            c = STRAW_L    # lit top edge
-                elif k >= th - 1:     c = STRAW_D    # shaded underside
-                else:                 c = STRAW_M
+            if 0 <= y < H:
+                if k == 0:        c = STRAW_L
+                elif k >= th - 1: c = STRAW_D
+                else:             c = STRAW_M
                 A[y, x] = c
 
-    # red band with gold trim around the base of the crown
     band_y = brim_y - brim_th
     for dx in range(-crown_bh, crown_bh + 1):
         x = cx + dx
-        if not (0 <= x < AW):
+        if not (0 <= x < W):
             continue
         for k, c in ((0, GOLD), (1, RED), (2, RED), (3, GOLD)):
             y = band_y - 3 + k
-            if 0 <= y < AH:
+            if 0 <= y < H:
                 A[y, x] = c
-    for gdx in range(-crown_bh + 3, crown_bh - 2, 6):      # gold studs on the band
+    for gdx in range(-crown_bh + 3, crown_bh - 2, 6):
         x = cx + gdx
-        if 0 <= x < AW:
+        if 0 <= x < W:
             A[band_y - 2, x] = GOLD
 
-    # gold bolita trim hanging under the brim edge
-    for dx in range(-brim_hw + 4, brim_hw - 3, 7):
+    for dx in range(-brim_hw + 4, brim_hw - 3, 7):     # gold bolita trim
         x = cx + dx
         tt = dx / brim_hw
         mid = brim_y + brim_dip * (1 - tt*tt) - brim_curl * (tt*tt)
         y = int(round(mid + brim_th/2 + 1))
-        if 0 <= y < AH and 0 <= x < AW:
+        if 0 <= y < H and 0 <= x < W:
             A[y, x] = GOLD
 
-    # soft shadow the brim casts on Clawd's forehead
-    for dx in range(-crown_bh - 6, crown_bh + 7):
+    for dx in range(-crown_bh - 6, crown_bh + 7):      # brim shadow on the face
         x = cx + dx
         y = brim_y + brim_th
-        if 0 <= y < AH and 0 <= x < AW and A[y, x] == CLAWD:
+        if 0 <= y < H and 0 <= x < W and A[y, x] == CLAWD:
             A[y, x] = SHADE
 
 
-def draw_maraca(A, base_xy, bulb_xy, r, lit_left=True):
-    """A maraca: a brown handle from the hand up to a round gold bulb."""
-    by_, bx_ = base_xy
-    uy, ux = bulb_xy
-    thick_line(A, by_, bx_, uy, ux, 1, HANDLE)          # handle
-    fill_disk(A, uy, ux, r, GOLD)                       # bulb
-    # volume shading on the far side + a highlight on the near side
-    sx = -1 if lit_left else 1
-    for dy in range(-r, r+1):
-        for dx in range(-r, r+1):
-            if dy*dy + dx*dx <= r*r:
-                yy, xx = uy+dy, ux+dx
-                if 0 <= yy < AH and 0 <= xx < AW:
-                    if dx * sx > r*0.35 and dy > -r*0.3:
-                        A[yy, xx] = STRAW_D             # shaded crescent
-    A[uy - r//2, ux - sx*(r//2)] = STRAW_L              # sheen
-    # festive dots
-    A[uy, ux] = RED
-    A[uy - 2, ux + sx] = TEAL
-    A[uy + 2, ux - sx] = RED
-
-
-def build_assembly():
+def build_body():
     A = np.zeros((AH, AW), dtype=np.uint8)
-    # Clawd body
     for j, row in enumerate(ART):
         for i, ch in enumerate(row):
             if ch == ".":
                 continue
             A[BY+j*SCALE:BY+(j+1)*SCALE, BX+i*SCALE:BX+(i+1)*SCALE] = \
                 EYE if ch == "O" else CLAWD
-    # a maraca shaken close beside each shoulder (bulbs clear of the brim)
-    draw_maraca(A, (BY + 32, BX + 8),      (BY + 14, BX - 8),      r=9, lit_left=True)
-    draw_maraca(A, (BY + 32, BX + SX - 9), (BY + 14, BX + SX + 7), r=9, lit_left=False)
-    # sombrero on top (drawn after the body so the brim occludes the head)
     draw_sombrero(A)
-    # single white outline wrapping the whole figure
-    solid = A > 0
-    A[border_mask(solid, pen_disk(2))] = WHITE
+    A[border_mask(A > 0, pen_disk(2))] = WHITE
     return A
 
 
-ASSEMBLY = build_assembly()
-PY, PX = BY + SY//2, CX0                    # pivot: Clawd's hips
+def build_arm():
+    """One arm (orange) whose hand grips a maraca by the handle, bulb on the far
+    end -- drawn in a rest pose pointing up-and-out to the right. Returns the
+    array and the shoulder cell it rotates about."""
+    H = W = 74
+    A = np.zeros((H, W), dtype=np.uint8)
+    sy, sx = 56, 14                                    # shoulder (lower-left)
+    a = math.radians(ARM_ANG)
+    dx, dy = math.cos(a), -math.sin(a)                 # up-and-out
+    hy, hx = sy + dy*LARM, sx + dx*LARM                # hand
+    ey, ex = sy + dy*(LARM+LHANDLE), sx + dx*(LARM+LHANDLE)      # handle end
+    by, bx = sy + dy*(LARM+LHANDLE+BULB_R), sx + dx*(LARM+LHANDLE+BULB_R)  # bulb
+    thick_line(A, sy, sx, hy, hx, 2, CLAWD)            # upper arm (~5px)
+    thick_line(A, hy, hx, ey, ex, 1, HANDLE)           # handle (~3px)
+    draw_bulb(A, int(round(by)), int(round(bx)), BULB_R)
+    A[border_mask(A > 0, pen_disk(2))] = WHITE
+    return A, (sy, sx)
+
+
+BODY = build_body()
+ARM_R, (SRY, SRX) = build_arm()
+ARM_L = ARM_R[:, ::-1].copy()                          # mirror for the left arm
+SLY, SLX = SRY, ARM_L.shape[1] - 1 - SRX
 
 
 def _center_on(A, cy, cx):
@@ -212,31 +229,43 @@ def _center_on(A, cy, cx):
     return out
 
 
-CENTERED = _center_on(ASSEMBLY, PY, PX)
+CEN_R = _center_on(ARM_R, SRY, SRX)                    # shoulder at the centre
+CEN_L = _center_on(ARM_L, SLY, SLX)
 
 
-def rotated(angle_deg):
-    im = Image.new("P", (CENTERED.shape[1], CENTERED.shape[0]))
+def rot(arr, angle):
+    im = Image.new("P", (arr.shape[1], arr.shape[0]))
     im.putpalette(pal_bytes)
-    im.frombytes(CENTERED.tobytes())
-    r = im.rotate(angle_deg, resample=Image.NEAREST, expand=True, fillcolor=0)
+    im.frombytes(arr.tobytes())
+    r = im.rotate(angle, resample=Image.NEAREST, expand=True, fillcolor=0)
     return np.asarray(r)
 
 
-# world position of the pivot (keeps the dancing figure centred)
-WPX, WPY = 64, 74
+def blit(g, arr, y0, x0):
+    ys, xs = np.nonzero(arr)
+    for ry, rx in zip(ys, xs):
+        wy, wx = y0 + ry, x0 + rx
+        if 0 <= wy < N and 0 <= wx < N:
+            g[wy, wx] = arr[ry, rx]
+
+
+def place_arm(g, cen, sho, by0, bx0, angle):
+    R = rot(cen, angle)
+    wy, wx = by0 + sho[0], bx0 + sho[1]                # world shoulder
+    blit(g, R, wy - R.shape[0]//2, wx - R.shape[1]//2)
+
 
 # ---- music notes bobbing overhead ------------------------------------
-NOTES = [(30, 3.0, 0.0), (150, 3.0, math.pi), (98, 4.0, 1.7)]  # (x, amp, phase)
+NOTES = [(38, 3.0, 0.0), (90, 3.0, math.pi), (64, 3.5, 1.7)]  # (x, amp, phase)
 
 def eighth_note(g, cy, cx, color):
-    for dy in range(6):                         # stem
+    for dy in range(6):
         y, x = cy - dy, cx + 2
         if 0 <= y < N and 0 <= x < N: g[y, x] = color
-    for dy in range(2):                         # flag
+    for dy in range(2):
         y, x = cy - 5 + dy, cx + 3
         if 0 <= y < N and 0 <= x < N: g[y, x] = color
-    for dy in range(-1, 2):                     # notehead
+    for dy in range(-1, 2):
         for dx in range(-1, 2):
             y, x = cy + dy, cx + dx
             if 0 <= y < N and 0 <= x < N: g[y, x] = color
@@ -249,47 +278,20 @@ def paint_notes(g, f):
         eighth_note(g, y, x, GOLD)
 
 
-# bulb centres in the assembly, as offsets from the pivot (relx, rely, outer-sign)
-BULBS = [(BX - 8 - PX, BY + 14 - PY, -1), (BX + SX + 7 - PX, BY + 14 - PY, +1)]
-
-def _bulb_world(relx, rely, ang, sway, hop):
-    th = math.radians(ang)                               # match PIL's CCW rotate
-    rx = math.cos(th)*relx + math.sin(th)*rely
-    ry = -math.sin(th)*relx + math.cos(th)*rely
-    return WPX + sway + rx, WPY - hop + ry
-
-def maraca_ticks(g, f, ang, sway, hop):
-    """Little shake-lines flicking off the outer side of each maraca bulb."""
-    ph = 2*math.pi * f / F
-    for relx, rely, sgn in BULBS:
-        bx, by = _bulb_world(relx, rely, ang, sway, hop)
-        for i in range(3):
-            wob = 1.3 * math.sin(ph + i*1.6)
-            x = int(round(bx + sgn * (13 + i*2)))        # just outboard of the bulb
-            y = int(round(by - 6 + i*5 + wob))
-            for dx in range(2):                          # a short dash
-                xx = x + sgn*dx
-                if 0 <= y < N and 0 <= xx < N and g[y, xx] == T:
-                    g[y, xx] = WHITE
-
-
 def compose(f):
     g = np.zeros((N, N), dtype=np.uint8)
     ph = 2*math.pi * f / F
-    paint_notes(g, f)                                     # behind the figure
-    ang = TILT * math.sin(ph)
-    R = rotated(ang)
-    rh, rw = R.shape
-    sway = SWAY * math.sin(ph)
+    step = STEP * math.sin(ph)
     hop  = HOP * abs(math.sin(ph))
-    y0 = int(round(WPY - hop)) - rh // 2
-    x0 = int(round(WPX + sway)) - rw // 2
-    ys, xs = np.nonzero(R)
-    for ry, rx in zip(ys, xs):
-        wy, wx = y0 + ry, x0 + rx
-        if 0 <= wy < N and 0 <= wx < N:
-            g[wy, wx] = R[ry, rx]
-    maraca_ticks(g, f, ang, sway, hop)
+    by0 = int(round(WPY - hop)) - PYB
+    bx0 = int(round(WPX + step)) - PXB
+    shake = SHAKE * math.sin(2*math.pi * SHAKEK * f / F)
+
+    paint_notes(g, f)                                  # behind everything
+    place_arm(g, CEN_L, SHO_L, by0, bx0, shake)        # arms behind the body
+    place_arm(g, CEN_R, SHO_R, by0, bx0, shake)
+    blit(g, BODY, by0, bx0)                            # body + hat on top
+
     im = Image.frombytes("P", (CANVAS, CANVAS), g.tobytes())
     im.putpalette(pal_bytes)
     return im
