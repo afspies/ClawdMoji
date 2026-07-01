@@ -5,10 +5,14 @@ Everything lives on one 16x16 pixel grid (cell=8px -> 128x128 emoji) so the
 pixel size is consistent between the flames and Clawd.
 """
 import random
+import sys
 from pathlib import Path
 from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared.clawd import ART
+
+OUT = Path(__file__).resolve().parent; OUT.mkdir(exist_ok=True)
 random.seed(7)
 
 N = 16
@@ -25,16 +29,6 @@ EMB   = (140, 28, 18, 255)    # ember tip / dark
 TRANS = (0, 0, 0, 0)
 
 # Clawd 12x8 silhouette (#=body, O=eye) placed into the scene -----------
-ART = [
-    "..########..",
-    "..#O####O#..",
-    "############",
-    "############",
-    "..########..",
-    "..########..",
-    "..#.#..#.#..",
-    "..#.#..#.#..",
-]
 CW, CH = 12, 8
 OX, OY = 2, 4  # top-left of Clawd in the 16x16 scene (head clear, legs in fire)
 

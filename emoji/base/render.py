@@ -4,28 +4,18 @@
 Slack emoji target: 128x128 PNG, transparent background, integer-pixel cells
 so the pixel-art stays razor sharp at any display size.
 """
+import sys
 from pathlib import Path
 from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared.clawd import ART, GX, GY, CLAWD_RGB, EYE_RGB
 
-ORANGE = (218, 119, 88, 255)   # #DA7758  (sampled from source)
-EYE    = (0, 0, 0, 255)
+OUT = Path(__file__).resolve().parent; OUT.mkdir(exist_ok=True)
+
+ORANGE = CLAWD_RGB + (255,)    # #DA7758  (sampled from source)
+EYE    = EYE_RGB + (255,)
 TRANSP = (0, 0, 0, 0)
-
-# 12x8 grid recovered from images.png  (#=body, O=eye, .=empty)
-ART = [
-    "..########..",
-    "..#O####O#..",
-    "############",
-    "############",
-    "..########..",
-    "..########..",
-    "..#.#..#.#..",
-    "..#.#..#.#..",
-]
-GY, GX = len(ART), len(ART[0])
-assert (GY, GX) == (8, 12)
 
 CANVAS = 128
 CELL = min(CANVAS // GX, CANVAS // GY)   # = 10 -> art 120x80
@@ -44,7 +34,7 @@ for j, row in enumerate(ART):
                 px[ox + i*CELL + dx, oy + j*CELL + dy] = color
 
 img.save(OUT / "clawd_emoji.png")
-print(f"wrote emoji/clawd_emoji.png  {CANVAS}x{CANVAS}  cell={CELL}px  art={artw}x{arth}")
+print(f"wrote {OUT.name}/clawd_emoji.png  {CANVAS}x{CANVAS}  cell={CELL}px  art={artw}x{arth}")
 
 # also a tight, exactly-proportioned version (no padding) for reference
 tight = Image.new("RGBA", (artw, arth), TRANSP)
@@ -57,4 +47,4 @@ for j, row in enumerate(ART):
                 for dx in range(CELL):
                     tp[i*CELL+dx, j*CELL+dy] = color
 tight.save(OUT / "clawd_emoji_tight.png")
-print(f"wrote emoji/clawd_emoji_tight.png  {artw}x{arth}")
+print(f"wrote {OUT.name}/clawd_emoji_tight.png  {artw}x{arth}")

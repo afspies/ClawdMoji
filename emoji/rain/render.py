@@ -12,11 +12,15 @@ Outputs clawd_rain_still.png and clawd_rain.gif.
 """
 import math
 import random
+import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared.clawd import ART, border_mask, pen_square
+
+OUT = Path(__file__).resolve().parent; OUT.mkdir(exist_ok=True)
 random.seed(5)
 
 N, CELL = 64, 2
@@ -78,10 +82,6 @@ def paint_cloud(g, f):
             g[y, x] = cloud_tex[y, (x - shift) % P]
 
 # ---- Clawd + thin white border ---------------------------------------
-ART = [
-    "..########..", "..#O####O#..", "############", "############",
-    "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#..",
-]
 SCALE = 4
 SX, SY = 12*SCALE, 8*SCALE
 OX, OY = (N - SX)//2, N - SY - 2
@@ -93,15 +93,7 @@ for j, row in enumerate(ART):
         clawd[OY+j*SCALE:OY+(j+1)*SCALE, OX+i*SCALE:OX+(i+1)*SCALE] = \
             EYE if ch == "O" else CLAWD
 body = clawd > 0
-border = np.zeros_like(body)
-for dy in (-1,0,1):
-    for dx in (-1,0,1):
-        sh = np.zeros_like(body)
-        ys=slice(max(0,dy),N+min(0,dy)); xs=slice(max(0,dx),N+min(0,dx))
-        yt=slice(max(0,-dy),N+min(0,-dy)); xt=slice(max(0,-dx),N+min(0,-dx))
-        sh[ys,xs] = body[yt,xt]; border |= sh
-border &= ~body
-clawd[border] = WHITE
+clawd[border_mask(body, pen_square(1))] = WHITE
 CLAWD_MASK = clawd > 0
 
 # ---- fat rain drops --------------------------------------------------

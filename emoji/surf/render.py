@@ -17,11 +17,15 @@ Outputs clawd_surf_still.png and clawd_surf.gif.
 """
 import math
 import random
+import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared.clawd import ART, border_mask, pen_disk
+
+OUT = Path(__file__).resolve().parent; OUT.mkdir(exist_ok=True)
 
 N, CELL = 128, 1
 CANVAS = N * CELL   # 128
@@ -77,10 +81,6 @@ def surface_row(x, f):
     return base_surface(x) + ripple
 
 # ---- Clawd + surfboard, built as one rotatable assembly --------------
-ART = [
-    "..########..", "..#O####O#..", "############", "############",
-    "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#..",
-]
 SCALE = 7                        # art-cell size in grid cells (12x8 -> 84x56)
 SX, SY = 12*SCALE, 8*SCALE
 RIDE_X = 64                      # board water-contact column (shifted right)
@@ -107,17 +107,7 @@ def build_assembly():
                 EYE if ch == "O" else CLAWD
     # white outline -- 2px thick; PAD gives the dilation room on every side
     body = (A == CLAWD) | (A == EYE)
-    border = np.zeros_like(body)
-    for dy in range(-2, 3):
-        for dx in range(-2, 3):
-            if dy*dy + dx*dx > 5:                     # roughly circular 2px pen
-                continue
-            sh = np.zeros_like(body)
-            ys = slice(max(0, dy), H+min(0, dy)); xs = slice(max(0, dx), W+min(0, dx))
-            yt = slice(max(0, -dy), H+min(0, -dy)); xt = slice(max(0, -dx), W+min(0, -dx))
-            sh[ys, xs] = body[yt, xt]; border |= sh
-    border &= ~body
-    A[border] = WHITE
+    A[border_mask(body, pen_disk(2))] = WHITE          # roughly circular 2px pen
     # surfboard: a fat lozenge just under Clawd's feet
     feet_row = oy + SY - 1
     bcx = ox + SX // 2

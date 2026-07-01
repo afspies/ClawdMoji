@@ -9,11 +9,15 @@
 Outputs clawd_fire_still.png and clawd_fire.gif.
 """
 import random
+import sys
 from pathlib import Path
 import numpy as np
 from PIL import Image
 
-OUT = Path(__file__).resolve().parent.parent / "emoji"; OUT.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from shared.clawd import ART, border_mask, pen_square
+
+OUT = Path(__file__).resolve().parent; OUT.mkdir(exist_ok=True)
 random.seed(11)
 
 CANVAS = 128
@@ -41,10 +45,6 @@ pal_bytes = bytes([c for rgb in palette for c in rgb] + [0]*(768 - 3*len(palette
 
 # ====================  layer 1: Clawd on a fine 64-grid  ===============
 NC, CELLC = 64, 2
-ART = [
-    "..########..", "..#O####O#..", "############", "############",
-    "..########..", "..########..", "..#.#..#.#..", "..#.#..#.#..",
-]
 SCALE = 4                              # Clawd pixel -> 4 cells = 8px
 SX, SY = 12*SCALE, 8*SCALE             # 48 x 32 cells
 OX, OY = (NC - SX)//2, NC - SY - 6
@@ -58,15 +58,7 @@ for j, row in enumerate(ART):
         clawd[OY+j*SCALE:OY+(j+1)*SCALE, OX+i*SCALE:OX+(i+1)*SCALE] = val
 
 body = clawd > 0                        # thin (1 cell = 2px) white border
-border = np.zeros_like(body)
-for dy in (-1,0,1):
-    for dx in (-1,0,1):
-        sh = np.zeros_like(body)
-        ys=slice(max(0,dy),NC+min(0,dy)); xs=slice(max(0,dx),NC+min(0,dx))
-        yt=slice(max(0,-dy),NC+min(0,-dy)); xt=slice(max(0,-dx),NC+min(0,-dx))
-        sh[ys,xs] = body[yt,xt]; border |= sh
-border &= ~body
-clawd[border] = I_WHITE
+clawd[border_mask(body, pen_square(1))] = I_WHITE
 clawd128 = np.kron(clawd, np.ones((CELLC, CELLC), dtype=np.uint8))   # 128x128
 FG = clawd128 > 0
 

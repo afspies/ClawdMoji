@@ -6,7 +6,7 @@ logo — no image editor involved.
 
 | Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
 |:----:|:-----------------:|:-------------:|:----------:|
-| ![base](emoji/clawd_emoji.png) | ![fire](emoji/clawd_fire.gif) | ![rain](emoji/clawd_rain.gif) | ![surf](emoji/clawd_surf.gif) |
+| ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
 | static, transparent | animated, seamless loop | animated, seamless loop | animated, seamless loop |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
@@ -17,7 +17,7 @@ Slack custom emoji (≤ 128 KB).
 ## The pixel grid
 
 The starting point was a screenshot of the "Welcome, Clawd" splash
-([`source/clawd_source.png`](source/clawd_source.png)). [`scripts/analyze_grid.py`](scripts/analyze_grid.py)
+([`source/clawd_source.png`](source/clawd_source.png)). [`tools/analyze_grid.py`](tools/analyze_grid.py)
 recovers the pixel-art grid underneath it:
 
 1. isolate the orange body by colour,
@@ -40,19 +40,21 @@ body `#DA7758`, eyes `#000000`.
 ..#.#..#.#..
 ```
 
-This `ART` string is the single source of truth — every render script draws
-from it, so the creature is identical across all variants.
+This grid lives in [`shared/clawd.py`](shared/clawd.py) as the `ART` string —
+the single source of truth every render script imports, so the creature is
+identical across all variants. That module also holds the sampled colours and
+the white-outline dilation the renderers share.
 
 ---
 
 ## The emoji
 
-### Base — [`render_emoji.py`](scripts/render_emoji.py)
+### Base — [`base/render.py`](emoji/base/render.py)
 The grid rendered with integer-pixel cells (10 px) so it stays razor-sharp at
 any zoom. Outputs the padded square `clawd_emoji.png` and a tight,
 exactly-proportioned `clawd_emoji_tight.png`.
 
-### "This is fine" — [`render_fire_anim.py`](scripts/render_fire_anim.py)
+### "This is fine" — [`fire/render.py`](emoji/fire/render.py)
 Calm Clawd in front of a burning room, composited from two layers:
 - **fire (back):** a real [Doom-fire](https://fabiensanglard.net/doom_fire_psx/)
   simulation on a coarse 32-grid — a hot source row propagates upward with
@@ -69,7 +71,7 @@ hidden by the natural flicker). A static fallback is saved as `clawd_fire_still.
 > ⚠️ `clawd_fire.gif` is ~102 KB — just under Slack's 128 KB cap. Lower `MAXL`
 > or raise `DUR` if you need it smaller.
 
-### Rainy day — [`render_rain_anim.py`](scripts/render_rain_anim.py)
+### Rainy day — [`rain/render.py`](emoji/rain/render.py)
 Clawd under a storm cloud, four composited layers (cloud → back rain → Clawd →
 front rain):
 - **cloud:** a full-width band of churning grey with a ragged underside; its
@@ -84,7 +86,7 @@ Here the **loop is exactly seamless by construction**: rain wraps on a vertical
 tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 (`S·F = P`), and splashes are a pure function of `frame mod F`.
 
-### Surfing — [`render_surf_anim.py`](scripts/render_surf_anim.py)
+### Surfing — [`surf/render.py`](emoji/surf/render.py)
 Clawd dropping down the face of a breaking wave on a red surfboard, composited
 back-to-front (ocean → crest foam → crest spray → Clawd+board → waterline
 wash + bow-spray).
@@ -120,33 +122,41 @@ Requires Python 3 with Pillow and NumPy:
 ```bash
 pip install pillow numpy
 
-# run from anywhere — scripts resolve paths relative to themselves
-python3 scripts/analyze_grid.py      # prints the recovered grid (writes build/)
-python3 scripts/render_emoji.py      # -> emoji/clawd_emoji*.png
-python3 scripts/render_fire_anim.py  # -> emoji/clawd_fire.gif + still
-python3 scripts/render_rain_anim.py  # -> emoji/clawd_rain.gif + still
-python3 scripts/render_surf_anim.py  # -> emoji/clawd_surf.gif + still
+# run from anywhere — each script writes into its own folder and imports shared/
+python3 tools/analyze_grid.py       # prints the recovered grid (writes build/)
+python3 emoji/base/render.py        # -> emoji/base/clawd_emoji*.png
+python3 emoji/fire/render.py        # -> emoji/fire/clawd_fire.gif + still
+python3 emoji/rain/render.py        # -> emoji/rain/clawd_rain.gif + still
+python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
 height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
 splash frequency for rain; wave geometry, bob, ripple, and spray for surf.
-`render_fire.py` is the original *static* "this is fine" (kept for reference;
-the animated version supersedes it).
+[`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
+*static* "this is fine" (kept for reference; the animated version supersedes it).
 
 ## Add to Slack
 
-**Settings → Customize → Emoji → Add Custom Emoji**, upload a file from
-`emoji/`, and give it a name (e.g. `:clawd:`, `:clawd-fine:`, `:clawd-rain:`,
-`:clawd-surf:`).
+**Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
+relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
+`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`).
 Animated GIFs animate inline.
 
 ## Layout
 
+Each emoji is a self-contained folder — its render script plus the committed
+output(s) it produces — over a shared sprite definition:
+
 ```
 ClawdMoji/
-├── source/   original logo screenshot
-├── scripts/  analysis + render scripts (path-robust)
-├── emoji/    generated outputs (committed)
-└── build/    intermediate arrays from analyze_grid.py (gitignored)
+├── shared/clawd.py   the ART grid + colours + outline helper (single source of truth)
+├── source/           original logo screenshot
+├── tools/            analyze_grid.py — recovers the grid from the source
+├── emoji/
+│   ├── base/         render.py + clawd_emoji*.png
+│   ├── fire/         render.py (+ render_static.py) + clawd_fire.gif/still
+│   ├── rain/         render.py + clawd_rain.gif/still
+│   └── surf/         render.py + clawd_surf.gif/still
+└── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
