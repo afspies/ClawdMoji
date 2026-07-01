@@ -139,10 +139,9 @@ a handheld net at a butterfly that keeps fluttering just out of reach. Full 128
 grid (`CELL=1`) so the helmet dome, the mesh hoop and the butterfly stay crisp.
 Unlike the sprite-on-transparent emoji this one is a **full opaque scene** that
 fills the square, composited back-to-front (sky + clouds → grass → flowers →
-specimen jar → Clawd → net → butterfly → foreground grass):
+Clawd → net → butterfly → foreground grass):
 - **field:** a blue sky with a couple of soft clouds over a green meadow of
-  swaying blades and flowers, with a specimen jar sitting in the grass — part of
-  the bug-catching kit.
+  swaying blades and flowers.
 - **Clawd:** full 2 px white outline, in a khaki **pith helmet** (rounded dome,
   band, wide down-curved brim, top knob) with a strap-slung **satchel** — one
   rigid piece with a tiny bob.

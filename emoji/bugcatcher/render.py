@@ -74,14 +74,14 @@ GSWAY  = 3.0        # grass sway amplitude (px)
 HORIZON = 76        # top row of the grass
 
 # body built in a local canvas, then blitted at a fixed spot (+ tiny bob)
-AW, AH   = 100, 104
-SCALE    = 5                       # 12x8 art -> 60x40
+AW, AH   = 110, 118
+SCALE    = 6                       # 12x8 art -> 72x48
 SXP, SYP = 12*SCALE, 8*SCALE
-BOX, BOY = 20, 34                  # Clawd top-left inside the body canvas
+BOX, BOY = 19, 40                  # Clawd top-left inside the body canvas
 HELM_CX  = BOX + SXP//2            # helmet centre column (= body centre)
-SHO_LOC  = (BOY + 11, BOX + SXP - 5)   # net-arm shoulder, body-canvas coords
-BODY_Y0, BODY_X0 = 30, -2          # where the body canvas lands in the world
-FEET_LOC = BOY + SYP               # 74 -> world 104
+SHO_LOC  = (BOY + 13, BOX + SXP - 6)    # net-arm shoulder, body-canvas coords
+BODY_Y0, BODY_X0 = 21, -11         # placed so the net shoulder lands ~(74,74)
+FEET_LOC = BOY + SYP               # 88 -> world 109
 
 # ---- net (arm + pole + mesh hoop) -------------------------------------
 MID     = 44        # rest swing angle above horizontal (degrees, up-and-right)
@@ -135,9 +135,9 @@ def draw_helmet(A):
     stay clear below it."""
     cx = HELM_CX
     brim_y   = BOY + 1                 # brim rides the crown; eyes stay below
-    dome_top = brim_y - 16
-    dome_bh  = 16                      # dome half-width at its base
-    brim_hw  = 25                      # brim half-width (wider than the head)
+    dome_top = brim_y - 19
+    dome_bh  = 19                      # dome half-width at its base
+    brim_hw  = 30                      # brim half-width (wider than the head)
     dome_h   = brim_y - dome_top
 
     # rounded dome (half-ellipse profile, lit from the upper-left)
@@ -179,12 +179,12 @@ def draw_helmet(A):
 def draw_satchel(A):
     """A collector's satchel slung on a diagonal strap across the body."""
     # strap: right shoulder -> left hip
-    thick_line(A, BOY + 9, BOX + SXP - 12, BOY + 30, BOX + 10, 1, SATCH)
+    thick_line(A, BOY + 11, BOX + SXP - 14, BOY + 37, BOX + 12, 2, SATCH)
     # bag on the left hip
-    bx0, by0 = BOX + 2, BOY + 26
-    fill_ellipse(A, by0 + 6, bx0 + 6, 7, 8, SATCH)
-    for dx in range(-8, 9):                       # flap across the top
-        x = bx0 + 6 + dx
+    bx0, by0 = BOX + 2, BOY + 30
+    fill_ellipse(A, by0 + 7, bx0 + 7, 9, 10, SATCH)
+    for dx in range(-10, 11):                      # flap across the top
+        x = bx0 + 7 + dx
         if 0 <= x < A.shape[1]:
             A[by0, x] = HELM_D
             A[by0 + 1, x] = HELM_D
@@ -367,31 +367,6 @@ def paint_flowers(g, f):
             g[hy, hx] = FLOWER_Y
 
 
-def paint_jar(g):
-    """A specimen jar sitting in the grass -- a bit of the bug-catching kit."""
-    jx, jy = 15, 112                  # jar centre (in the grass, lower left)
-    for dy in range(-8, 8):           # glass body
-        for dx in range(-6, 7):
-            if abs(dx) <= 6 and -8 <= dy <= 7:
-                y, x = jy + dy, jx + dx
-                if 0 <= y < N and 0 <= x < N:
-                    g[y, x] = MESH
-    for dy in range(-8, 8):           # right-edge sheen / left highlight
-        y = jy + dy
-        if 0 <= y < N:
-            g[y, jx - 5] = WHITE
-    for dx in range(-6, 7):           # lid
-        x = jx + dx
-        if 0 <= x < N:
-            g[jy - 9, x] = HELM_D
-            g[jy - 10, x] = HELM_D
-    g[jy + 2, jx + 1] = GRASS_L       # a caught leaf inside
-    g[jy + 3, jx] = GRASS_L
-    # thin white outline so the glass reads against the grass
-    jar = (g == MESH)
-    g[border_mask(jar, pen_disk(1))] = WHITE
-
-
 # ======================================================================
 # butterfly
 # ======================================================================
@@ -440,7 +415,6 @@ def compose(f):
     paint_grass(g)
     paint_back_grass(g, f)
     paint_flowers(g, f)
-    paint_jar(g)
 
     # Clawd (rigid) with a tiny bob
     blit(g, BODY, BODY_Y0 - bob, BODY_X0)
