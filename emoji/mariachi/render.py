@@ -71,7 +71,7 @@ WPX, WPY = 64, 74
 # ---- arm + maraca geometry --------------------------------------------
 ARM_ANG  = 10       # rest angle above horizontal (degrees, pointing up-and-out)
 LARM     = 7        # orange upper arm length
-LHANDLE  = 6        # brown handle length (gripped by the hand)
+LHANDLE  = 9        # brown handle length (holds the bulb out past the arm)
 BULB_R   = 6        # maraca bulb radius
 
 
@@ -197,28 +197,34 @@ def build_body():
 
 
 def build_arm():
-    """One arm (orange) whose hand grips a maraca by the handle, bulb on the far
-    end -- drawn in a rest pose pointing up-and-out to the right. Returns the
-    array and the shoulder cell it rotates about."""
-    H = W = 74
-    A = np.zeros((H, W), dtype=np.uint8)
-    sy, sx = 56, 14                                    # shoulder (lower-left)
+    """Returns (arm, maraca, shoulder). The orange arm and the maraca (handle +
+    bulb) are kept on separate layers so the arm can sit behind Clawd while the
+    maraca is composited in *front* -- the handle then reads as held out over
+    the arm, not tucked behind it. Rest pose points up-and-out to the right;
+    it gets mirrored for the left arm. Both layers share the shoulder pivot, so
+    rotating each by the same angle keeps the hand on the handle."""
+    H = W = 80
+    arm = np.zeros((H, W), dtype=np.uint8)
+    mar = np.zeros((H, W), dtype=np.uint8)
+    sy, sx = 60, 12                                    # shoulder (lower-left)
     a = math.radians(ARM_ANG)
     dx, dy = math.cos(a), -math.sin(a)                 # up-and-out
     hy, hx = sy + dy*LARM, sx + dx*LARM                # hand
     ey, ex = sy + dy*(LARM+LHANDLE), sx + dx*(LARM+LHANDLE)      # handle end
     by, bx = sy + dy*(LARM+LHANDLE+BULB_R), sx + dx*(LARM+LHANDLE+BULB_R)  # bulb
-    thick_line(A, sy, sx, hy, hx, 2, CLAWD)            # upper arm (~5px)
-    thick_line(A, hy, hx, ey, ex, 1, HANDLE)           # handle (~3px)
-    draw_bulb(A, int(round(by)), int(round(bx)), BULB_R)
-    A[border_mask(A > 0, pen_disk(2))] = WHITE
-    return A, (sy, sx)
+    thick_line(arm, sy, sx, hy, hx, 2, CLAWD)          # upper arm (~5px), behind
+    arm[border_mask(arm > 0, pen_disk(2))] = WHITE
+    thick_line(mar, hy, hx, ey, ex, 1, HANDLE)         # handle (~3px), in front
+    draw_bulb(mar, int(round(by)), int(round(bx)), BULB_R)
+    mar[border_mask(mar > 0, pen_disk(2))] = WHITE
+    return arm, mar, (sy, sx)
 
 
 BODY = build_body()
-ARM_R, (SRY, SRX) = build_arm()
-ARM_L = ARM_R[:, ::-1].copy()                          # mirror for the left arm
-SLY, SLX = SRY, ARM_L.shape[1] - 1 - SRX
+ARM_R, MAR_R, (SRY, SRX) = build_arm()
+ARM_L = ARM_R[:, ::-1].copy()                          # mirror for the left side
+MAR_L = MAR_R[:, ::-1].copy()
+SLY, SLX = SRY, ARM_R.shape[1] - 1 - SRX
 
 
 def _center_on(A, cy, cx):
@@ -229,8 +235,10 @@ def _center_on(A, cy, cx):
     return out
 
 
-CEN_R = _center_on(ARM_R, SRY, SRX)                    # shoulder at the centre
-CEN_L = _center_on(ARM_L, SLY, SLX)
+CEN_ARM_R = _center_on(ARM_R, SRY, SRX)                # shoulder at the centre
+CEN_ARM_L = _center_on(ARM_L, SLY, SLX)
+CEN_MAR_R = _center_on(MAR_R, SRY, SRX)
+CEN_MAR_L = _center_on(MAR_L, SLY, SLX)
 
 
 def rot(arr, angle):
@@ -288,9 +296,11 @@ def compose(f):
     shake = SHAKE * math.sin(2*math.pi * SHAKEK * f / F)
 
     paint_notes(g, f)                                  # behind everything
-    place_arm(g, CEN_L, SHO_L, by0, bx0, shake)        # arms behind the body
-    place_arm(g, CEN_R, SHO_R, by0, bx0, shake)
-    blit(g, BODY, by0, bx0)                            # body + hat on top
+    place_arm(g, CEN_ARM_L, SHO_L, by0, bx0, shake)    # arms behind the body
+    place_arm(g, CEN_ARM_R, SHO_R, by0, bx0, shake)
+    blit(g, BODY, by0, bx0)                            # body + hat
+    place_arm(g, CEN_MAR_L, SHO_L, by0, bx0, shake)    # maracas in front
+    place_arm(g, CEN_MAR_R, SHO_R, by0, bx0, shake)
 
     im = Image.frombytes("P", (CANVAS, CANVAS), g.tobytes())
     im.putpalette(pal_bytes)

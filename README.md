@@ -120,11 +120,12 @@ shaking them as he dances. Like surf it renders on the **full 128 grid**
 - **body + hat:** Clawd (full 2 px white outline) and a wide sombrero (rounded
   straw crown, red band with gold studs, up-curled brim, bolita trim) are one
   rigid piece that **steps left↔right** with a little bounce.
-- **arms:** each arm is built as its **own piece** — an orange arm whose hand
-  grips a maraca by the **handle**, bulb on the far end — and is **rotated about
-  the shoulder** so the maracas visibly **shake**. The two arms are mirror
-  images rotated by the same angle, so they alternate (one up, one down) for a
-  cha-cha feel.
+- **arms:** each side is two layers rotated together about the shoulder — an
+  orange arm *behind* Clawd, and the maraca (gripped by the **handle**, bulb on
+  the far end) composited in *front* so the handle reads as held out over the
+  arm. Rotating them makes the maracas visibly **shake**; because the two arms
+  are mirror images rotated by the same angle, they alternate (one up, one
+  down) for a cha-cha feel.
 - **flair:** a couple of gold **music notes** bob overhead.
 
 The **loop is seamless by construction**: the side-step is `sin(2π·f/F)`, the
