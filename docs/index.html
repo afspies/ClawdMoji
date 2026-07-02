@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ClawdMoji — pixel-art Clawd Slack emoji</title>
+<meta name="description" content="Programmatically generated pixel-art Slack emoji of Clawd, Claude's crab-like mascot. No image editor involved.">
+<style>
+  :root { --clawd: #DA7758; --bg: #16141f; --card: #201d2b; --ink: #f0ece4; --dim: #9b93a9; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.5 ui-monospace, "SF Mono", Menlo, monospace; padding: 2rem 1rem 4rem; }
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header img { image-rendering: pixelated; width: 96px; height: 96px; }
+  h1 { color: var(--clawd); font-size: 2rem; margin-top: .5rem; }
+  header p { color: var(--dim); max-width: 34rem; margin: .5rem auto 0; }
+  header a { color: var(--clawd); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; max-width: 64rem; margin: 0 auto; }
+  .card { background: var(--card); border-radius: 12px; padding: 1.25rem 1rem; text-align: center; }
+  .card img { image-rendering: pixelated; width: 128px; height: 128px; }
+  .card h2 { font-size: 1.05rem; margin-top: .6rem; }
+  .card p { color: var(--dim); font-size: .8rem; margin: .35rem 0 .7rem; min-height: 3.6em; }
+  .name { background: #2c2839; color: var(--clawd); border: 1px solid #3a3550; border-radius: 6px; font: inherit; font-size: .85rem; padding: .25rem .6rem; cursor: pointer; }
+  .name.copied::after { content: " ✓"; }
+  .dl { display: block; color: var(--dim); font-size: .75rem; margin-top: .5rem; }
+  .how { max-width: 40rem; margin: 3rem auto 0; background: var(--card); border-radius: 12px; padding: 1.5rem; }
+  .how h2 { color: var(--clawd); font-size: 1.1rem; }
+  .how ol { padding-left: 1.4rem; margin-top: .6rem; color: var(--dim); }
+  .how code { color: var(--ink); }
+  footer { text-align: center; color: var(--dim); font-size: .75rem; margin-top: 3rem; }
+  footer a { color: var(--clawd); }
+</style>
+</head>
+<body>
+  <header>
+    <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/base/clawd_emoji.png" alt="Clawd">
+    <h1>ClawdMoji</h1>
+    <p>Pixel-art Slack emoji of <strong>Clawd</strong>, generated entirely with
+       Python + math — no image editor involved.
+       <a href="https://github.com/afspies/ClawdMoji">Star it / add your own on GitHub</a>.</p>
+  </header>
+  <div class="grid">
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/base/clawd_emoji.png" alt="Original Clawdster" width="128" height="128">
+        <h2>Original Clawdster</h2>
+        <p>The recovered 12x8 pixel grid, rendered razor-sharp.</p>
+        <button class="name" data-name=":clawd:" title="click to copy">:clawd:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/base/clawd_emoji.png" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/fire/clawd_fire.gif" alt="This is Clawd" width="128" height="128">
+        <h2>This is Clawd 🔥</h2>
+        <p>Calm in a burning room — a real Doom-fire simulation.</p>
+        <button class="name" data-name=":clawd-fine:" title="click to copy">:clawd-fine:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/fire/clawd_fire.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/rain/clawd_rain.gif" alt="London Clawd" width="128" height="128">
+        <h2>London Clawd 🌧️</h2>
+        <p>Under a churning storm cloud, sheared rain and floor splashes.</p>
+        <button class="name" data-name=":clawd-rain:" title="click to copy">:clawd-rain:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/rain/clawd_rain.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/surf/clawd_surf.gif" alt="Clawd Surfing" width="128" height="128">
+        <h2>Clawd Surfing 🏄</h2>
+        <p>Dropping down the face of a breaking wave, rooster-tail flying.</p>
+        <button class="name" data-name=":clawd-surf:" title="click to copy">:clawd-surf:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/surf/clawd_surf.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/mariachi/clawd_mariachi.gif" alt="Mariachlawd" width="128" height="128">
+        <h2>Mariachlawd 🪇</h2>
+        <p>Sombrero on, maracas shaking, a little cha-cha step.</p>
+        <button class="name" data-name=":clawd-mariachi:" title="click to copy">:clawd-mariachi:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/mariachi/clawd_mariachi.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/bugcatcher/clawd_bugcatcher.gif" alt="Bug Claught" width="128" height="128">
+        <h2>Bug Claught 🦋</h2>
+        <p>Net-swinging butterfly chase in a sunny meadow.</p>
+        <button class="name" data-name=":clawd-bugcatcher:" title="click to copy">:clawd-bugcatcher:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/bugcatcher/clawd_bugcatcher.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/robinhood/clawd_robinhood.gif" alt="Clawdin Hood" width="128" height="128">
+        <h2>Clawdin Hood 🏹</h2>
+        <p>Draws his bow and looses an arrow — over and over.</p>
+        <button class="name" data-name=":clawd-robinhood:" title="click to copy">:clawd-robinhood:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/robinhood/clawd_robinhood.gif" download>download</a>
+      </div>
+      <div class="card">
+        <img src="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/hacker/clawd_hacker.gif" alt="Clawd Injection" width="128" height="128">
+        <h2>Clawd Injection 💉</h2>
+        <p>Hood up, face lit by the glow from the back of his laptop.</p>
+        <button class="name" data-name=":clawd-injection:" title="click to copy">:clawd-injection:</button>
+        <a class="dl" href="https://raw.githubusercontent.com/afspies/ClawdMoji/main/emoji/hacker/clawd_hacker.gif" download>download</a>
+      </div>
+  </div>
+  <div class="how">
+    <h2>Add to Slack</h2>
+    <ol>
+      <li>Download an emoji above (or grab the <a href="https://github.com/afspies/ClawdMoji/releases">full pack</a>).</li>
+      <li>In Slack: <strong>Settings &rarr; Customize &rarr; Emoji &rarr; Add Custom Emoji</strong>.</li>
+      <li>Upload the file and use the suggested <code>:name:</code> (click a name above to copy it).</li>
+    </ol>
+  </div>
+  <footer>
+    <p>Unofficial fan project — Clawd and the Anthropic spark are Anthropic, PBC's.
+       Code is <a href="https://github.com/afspies/ClawdMoji/blob/main/LICENSE">MIT</a>.
+       Want a variant that doesn't exist? <a href="https://github.com/afspies/ClawdMoji/issues/new?template=emoji-idea.yml">Suggest it</a>
+       or <a href="https://github.com/afspies/ClawdMoji/blob/main/CONTRIBUTING.md">build it</a>.</p>
+  </footer>
+<script>
+  document.querySelectorAll(".name").forEach(function (b) {
+    b.addEventListener("click", function () {
+      navigator.clipboard.writeText(b.dataset.name).then(function () {
+        b.classList.add("copied");
+        setTimeout(function () { b.classList.remove("copied"); }, 1200);
+      });
+    });
+  });
+</script>
+</body>
+</html>

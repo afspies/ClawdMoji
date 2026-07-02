@@ -9,11 +9,17 @@ Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus seven
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
+<!-- gallery:begin -->
 | **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
 | **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Injection** 💉 |
 | ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![hacker](emoji/hacker/clawd_hacker.gif) |
+<!-- gallery:end -->
+
+Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
+animate + click-to-copy Slack names), or grab the ready-to-upload
+**[emoji pack](https://github.com/afspies/ClawdMoji/releases)**.
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -253,11 +259,18 @@ animate inline.
 Each emoji is a self-contained folder — its render script plus the committed
 output(s) it produces — over a shared sprite definition:
 
+Each folder also carries a `meta.json` (title, flair emoji, Slack name, blurb,
+author) — [`tools/gen_gallery.py`](tools/gen_gallery.py) builds the gallery
+table above and the [live gallery site](https://afspies.github.io/ClawdMoji/)
+(`docs/index.html`) from those, so adding a variant never touches the README
+table by hand.
+
 ```
 ClawdMoji/
 ├── shared/clawd.py   the ART grid + colours + outline helper (single source of truth)
 ├── source/           original logo screenshot
-├── tools/            analyze_grid.py — recovers the grid from the source
+├── tools/            analyze_grid.py, gen_gallery.py, build_pack.py
+├── docs/             generated gallery site (GitHub Pages)
 ├── emoji/
 │   ├── base/         render.py + clawd_emoji*.png
 │   ├── fire/         render.py (+ render_static.py) + clawd_fire.gif/still
