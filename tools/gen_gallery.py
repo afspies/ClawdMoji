@@ -20,6 +20,7 @@ so adding a variant never means hand-editing the README table — run
     python3 tools/gen_gallery.py --check  # exit 1 if anything is stale (CI)
 """
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -71,7 +72,9 @@ def render_readme(metas, text):
         _, tail = rest.split(END, 1)
     except ValueError:
         sys.exit(f"README.md is missing the {BEGIN} / {END} markers")
-    return head + BEGIN + "\n" + readme_table(metas) + "\n" + END + tail
+    out = head + BEGIN + "\n" + readme_table(metas) + "\n" + END + tail
+    # keep the emoji-count badge honest
+    return re.sub(r"badge/emoji-\d+-", f"badge/emoji-{len(metas)}-", out)
 
 
 def render_docs(metas):
