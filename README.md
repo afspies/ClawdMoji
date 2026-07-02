@@ -1,5 +1,10 @@
 # ClawdMoji
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Emoji](https://img.shields.io/badge/emoji-8-blue.svg)](#the-emoji)
+[![Made with Pillow](https://img.shields.io/badge/made%20with-Pillow%20%2B%20NumPy-yellow.svg)](#regenerate)
+
 Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus seven
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
@@ -264,3 +269,19 @@ ClawdMoji/
 │   └── hacker/       render.py + clawd_hacker.gif/still
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
+
+## Contributing
+
+New Clawd variants are very welcome — a variant is just one folder with one
+`render.py` (and a `meta.json`) on top of the shared sprite. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the recipe, the hard constraints
+(128×128, ≤ 128 KB, seamless loop, authentic Clawd), and a copyable starter in
+[`emoji/_template/`](emoji/_template/). Not a coder? Open an
+[emoji idea](https://github.com/afspies/ClawdMoji/issues/new?template=emoji-idea.yml)
+instead.
+
+## License
+
+The **code** is [MIT](LICENSE). The **Clawd character** and the Anthropic spark
+are Anthropic, PBC's — this is an unofficial fan project, not affiliated with
+or endorsed by Anthropic, and no rights to the character or mark are granted.
