@@ -12,10 +12,8 @@ logo. No image editor involved.
 | **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Injection** 💉 |
-| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![hacker](emoji/hacker/clawd_hacker.gif) |
-| **Definitely Not Clawd** 🥸 |  |  |  |
-| ![notclawd](emoji/notclawd/clawd_notclawd.gif) |  |  |  |
+| **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Definitely Not Clawd** 🥸 |
+| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![notclawd](emoji/notclawd/clawd_notclawd.gif) |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
@@ -197,24 +195,6 @@ The **loop is seamless by construction**: full-draw (the aim) is identical at
 (`(1−smoothstep)·(1+sin)`) brings it back to the draw by the last frame, and the
 loosed arrow clears the right edge before the loop wraps — so only a fresh nocked
 arrow re-appears, the natural "re-load" beat.
-
-### Clawd Injection 💉 — [`hacker/render.py`](emoji/hacker/render.py)
-Hacker Clawd: hood up, face lit only by his laptop — which we see **from the
-back**, the screen hidden, an Anthropic spark where an apple would go. Full 128
-grid (`CELL=1`), everything a multiple of `SCALE` (`sc(v) = round(v·SCALE/7)`):
-- **hoodie:** the authentic Clawd silhouette recoloured into dark fabric, plus a
-  hood dome that **dips to a point over the brow** and casts a shadow band on
-  his face; drape folds and ordered dithering give it a knit texture. His little
-  orange **side-hands** (the `ART` rows 2–3 bumps) poke out below.
-- **laptop:** a slab-and-lid seen from behind, with the **Anthropic spark** in
-  clay-orange on the lid — static, like the real logo, not part of the light show.
-- **glow:** the screen light is modelled as a wash escaping over the lid's top
-  edge — a flat directional falloff `1/(1+(dy/DY)²+(dx/DX)²)`, not a spotlight —
-  and each material (skin, brow shadow, hood, seam) is swept through its own
-  dark→lit ramp per frame, **Bayer-dithered** so the gradient never bands.
-
-The **loop is seamless by construction**: the glow level is a pure sinusoid in
-`f/F` (a gentle two-harmonic breathe), so frame 0 and frame F match exactly.
 
 ---
 

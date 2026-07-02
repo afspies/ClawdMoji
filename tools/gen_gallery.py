@@ -5,11 +5,11 @@ emoji/*/meta.json.
 Each emoji folder owns a small meta.json:
 
     {
-      "order": 8,                       # gallery position
-      "title": "Clawd Injection",       # display name
-      "emoji": "\U0001f489",            # flair emoji ("" for none)
-      "slack": "clawd-injection",       # suggested :name:
-      "file": "clawd_hacker.gif",       # the output to show
+      "order": 7,                       # gallery position
+      "title": "Clawdin Hood",          # display name
+      "emoji": "\U0001f3f9",            # flair emoji ("" for none)
+      "slack": "clawd-robinhood",       # suggested :name:
+      "file": "clawd_robinhood.gif",    # the output to show
       "blurb": "one-liner",             # used on the docs site
       "author": "afspies"               # github handle
     }

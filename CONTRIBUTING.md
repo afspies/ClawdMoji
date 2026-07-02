@@ -27,8 +27,7 @@ and someone (possibly a passing Claude) may build it.
    existing renderers for patterns worth stealing:
    - rigid prop attached to Clawd (sombrero: [`mariachi`](emoji/mariachi/render.py))
    - rotating limb assemblies (net swing: [`bugcatcher`](emoji/bugcatcher/render.py))
-   - recolouring the sprite into a costume (tunic: [`robinhood`](emoji/robinhood/render.py),
-     hoodie: [`hacker`](emoji/hacker/render.py))
+   - recolouring the sprite into a costume (tunic: [`robinhood`](emoji/robinhood/render.py))
    - full opaque scenes (meadow: [`bugcatcher`](emoji/bugcatcher/render.py))
    - simulations behind Clawd (Doom-fire: [`fire`](emoji/fire/render.py))
 
