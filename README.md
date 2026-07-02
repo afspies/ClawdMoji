@@ -2,12 +2,11 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-orange.svg)](LICENSE)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-[![Emoji](https://img.shields.io/badge/emoji-8-blue.svg)](#the-emoji)
 [![Made with Pillow](https://img.shields.io/badge/made%20with-Pillow%20%2B%20NumPy-yellow.svg)](#regenerate)
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus seven
-animated variants. Everything is generated programmatically from the original
-logo — no image editor involved.
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji — a growing
+cast of animated variants, all generated programmatically from the original
+logo. No image editor involved.
 
 <!-- gallery:begin -->
 | **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
@@ -228,33 +227,25 @@ pip install pillow numpy
 
 # run from anywhere — each script writes into its own folder and imports shared/
 python3 tools/analyze_grid.py       # prints the recovered grid (writes build/)
-python3 emoji/base/render.py        # -> emoji/base/clawd_emoji*.png
-python3 emoji/fire/render.py        # -> emoji/fire/clawd_fire.gif + still
-python3 emoji/rain/render.py        # -> emoji/rain/clawd_rain.gif + still
-python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
-python3 emoji/mariachi/render.py    # -> emoji/mariachi/clawd_mariachi.gif + still
-python3 emoji/bugcatcher/render.py  # -> emoji/bugcatcher/clawd_bugcatcher.gif + still
-python3 emoji/robinhood/render.py   # -> emoji/robinhood/clawd_robinhood.gif + still
-python3 emoji/hacker/render.py      # -> emoji/hacker/clawd_hacker.gif + still
+python3 emoji/<name>/render.py      # -> emoji/<name>/clawd_*.gif (+ still)
+
+for r in emoji/*/render.py; do python3 "$r"; done   # or regenerate everything
 ```
 
-Each animated script exposes tunable constants near the top — flame
-height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
-splash frequency for rain; wave geometry, bob, ripple, and spray for surf;
-sway/hop/tilt and the sombrero + maraca geometry for mariachi; the net swing,
-butterfly flutter, and helmet/net/field geometry for bug catcher; the draw/release
-timing, arrow speed, and bow/cap/tunic geometry for Robin Hood; the glow
-falloff/level and hood/laptop geometry for the hacker.
+Each animated script exposes its tunable constants near the top — geometry,
+timing, and effect levels are all named, so every renderer doubles as
+documentation for its own variant (the per-emoji sections above describe the
+techniques).
 [`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
 *static* "this is fine" (kept for reference; the animated version supersedes it).
 
 ## Add to Slack
 
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
-relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
-`:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`,
-`:clawd-bugcatcher:`, `:clawd-robinhood:`, `:clawd-injection:`). Animated GIFs
-animate inline.
+relevant `emoji/<name>/` folder, and give it the name suggested in that
+folder's `meta.json` (e.g. `:clawd-fine:`) — or click-to-copy it from the
+[live gallery](https://afspies.github.io/ClawdMoji/). Animated GIFs animate
+inline.
 
 ## Layout
 
@@ -274,14 +265,8 @@ ClawdMoji/
 ├── tools/            analyze_grid.py, gen_gallery.py, build_pack.py
 ├── docs/             generated gallery site (GitHub Pages)
 ├── emoji/
-│   ├── base/         render.py + clawd_emoji*.png
-│   ├── fire/         render.py (+ render_static.py) + clawd_fire.gif/still
-│   ├── rain/         render.py + clawd_rain.gif/still
-│   ├── surf/         render.py + clawd_surf.gif/still
-│   ├── mariachi/     render.py + clawd_mariachi.gif/still
-│   ├── bugcatcher/   render.py + clawd_bugcatcher.gif/still
-│   ├── robinhood/    render.py + clawd_robinhood.gif/still
-│   └── hacker/       render.py + clawd_hacker.gif/still
+│   ├── _template/    copyable starter for new variants
+│   └── <name>/       render.py + meta.json + the committed .gif/.png outputs
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
 
