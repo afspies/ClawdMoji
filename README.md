@@ -1,14 +1,14 @@
 # ClawdMoji
 
-Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus six
+Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus seven
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
 | **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 |  |
-| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) |  |
+| **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Injection** 💉 |
+| ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![hacker](emoji/hacker/clawd_hacker.gif) |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
 Slack custom emoji (≤ 128 KB).
@@ -186,6 +186,24 @@ The **loop is seamless by construction**: full-draw (the aim) is identical at
 loosed arrow clears the right edge before the loop wraps — so only a fresh nocked
 arrow re-appears, the natural "re-load" beat.
 
+### Clawd Injection 💉 — [`hacker/render.py`](emoji/hacker/render.py)
+Hacker Clawd: hood up, face lit only by his laptop — which we see **from the
+back**, the screen hidden, an Anthropic spark where an apple would go. Full 128
+grid (`CELL=1`), everything a multiple of `SCALE` (`sc(v) = round(v·SCALE/7)`):
+- **hoodie:** the authentic Clawd silhouette recoloured into dark fabric, plus a
+  hood dome that **dips to a point over the brow** and casts a shadow band on
+  his face; drape folds and ordered dithering give it a knit texture. His little
+  orange **side-hands** (the `ART` rows 2–3 bumps) poke out below.
+- **laptop:** a slab-and-lid seen from behind, with the **Anthropic spark** in
+  clay-orange on the lid — static, like the real logo, not part of the light show.
+- **glow:** the screen light is modelled as a wash escaping over the lid's top
+  edge — a flat directional falloff `1/(1+(dy/DY)²+(dx/DX)²)`, not a spotlight —
+  and each material (skin, brow shadow, hood, seam) is swept through its own
+  dark→lit ramp per frame, **Bayer-dithered** so the gradient never bands.
+
+The **loop is seamless by construction**: the glow level is a pure sinusoid in
+`f/F` (a gentle two-harmonic breathe), so frame 0 and frame F match exactly.
+
 ---
 
 ## Regenerate
@@ -204,6 +222,7 @@ python3 emoji/surf/render.py        # -> emoji/surf/clawd_surf.gif + still
 python3 emoji/mariachi/render.py    # -> emoji/mariachi/clawd_mariachi.gif + still
 python3 emoji/bugcatcher/render.py  # -> emoji/bugcatcher/clawd_bugcatcher.gif + still
 python3 emoji/robinhood/render.py   # -> emoji/robinhood/clawd_robinhood.gif + still
+python3 emoji/hacker/render.py      # -> emoji/hacker/clawd_hacker.gif + still
 ```
 
 Each animated script exposes tunable constants near the top — flame
@@ -211,7 +230,8 @@ height/taper/threshold for fire; drop size, speed, slant, cloud churn, and
 splash frequency for rain; wave geometry, bob, ripple, and spray for surf;
 sway/hop/tilt and the sombrero + maraca geometry for mariachi; the net swing,
 butterfly flutter, and helmet/net/field geometry for bug catcher; the draw/release
-timing, arrow speed, and bow/cap/tunic geometry for Robin Hood.
+timing, arrow speed, and bow/cap/tunic geometry for Robin Hood; the glow
+falloff/level and hood/laptop geometry for the hacker.
 [`emoji/fire/render_static.py`](emoji/fire/render_static.py) is the original
 *static* "this is fine" (kept for reference; the animated version supersedes it).
 
@@ -220,7 +240,8 @@ timing, arrow speed, and bow/cap/tunic geometry for Robin Hood.
 **Settings → Customize → Emoji → Add Custom Emoji**, upload a file from the
 relevant `emoji/<name>/` folder, and give it a name (e.g. `:clawd:`,
 `:clawd-fine:`, `:clawd-rain:`, `:clawd-surf:`, `:clawd-mariachi:`,
-`:clawd-bugcatcher:`, `:clawd-robinhood:`). Animated GIFs animate inline.
+`:clawd-bugcatcher:`, `:clawd-robinhood:`, `:clawd-injection:`). Animated GIFs
+animate inline.
 
 ## Layout
 
@@ -239,6 +260,7 @@ ClawdMoji/
 │   ├── surf/         render.py + clawd_surf.gif/still
 │   ├── mariachi/     render.py + clawd_mariachi.gif/still
 │   ├── bugcatcher/   render.py + clawd_bugcatcher.gif/still
-│   └── robinhood/    render.py + clawd_robinhood.gif/still
+│   ├── robinhood/    render.py + clawd_robinhood.gif/still
+│   └── hacker/       render.py + clawd_hacker.gif/still
 └── build/            intermediate arrays from analyze_grid.py (gitignored)
 ```
