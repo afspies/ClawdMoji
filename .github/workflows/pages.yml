@@ -8,6 +8,11 @@ on:
     branches: [main]
     paths: ["docs/**"]
   workflow_dispatch:
+  # self-healing: GitHub's Pages deployment queue has been known to stall
+  # (2026-07-02 it ate five consecutive deploys) — retry on a timer, but
+  # skip the deploy when the site is already up.
+  schedule:
+    - cron: "*/30 * * * *"
 
 permissions:
   contents: read
@@ -19,7 +24,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  probe:
+    runs-on: ubuntu-latest
+    outputs:
+      live: ${{ steps.check.outputs.live }}
+    steps:
+      - id: check
+        run: echo "live=$(curl -s -o /dev/null -w '%{http_code}' https://afspies.github.io/ClawdMoji/)" >> "$GITHUB_OUTPUT"
+
   deploy:
+    needs: probe
+    # scheduled runs only deploy while the site is down; pushes always deploy
+    if: github.event_name != 'schedule' || needs.probe.outputs.live != '200'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
