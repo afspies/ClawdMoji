@@ -15,6 +15,8 @@ logo — no image editor involved.
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
 | **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Injection** 💉 |
 | ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![hacker](emoji/hacker/clawd_hacker.gif) |
+| **Definitely Not Clawd** 🥸 |  |  |  |
+| ![notclawd](emoji/notclawd/clawd_notclawd.gif) |  |  |  |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs

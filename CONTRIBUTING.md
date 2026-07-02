@@ -74,8 +74,12 @@ and someone (possibly a passing Claude) may build it.
 
 - Emoji are read at 32 px in Slack — favour **bold shapes over fine detail**,
   and test what your GIF looks like small.
-- Prefer the **full 128 grid** (`CELL=1`, `SCALE≈9`) for anything with curves
-  or rotation; it halves the chunkiness.
+- **Draw Clawd big.** Default to spanning the full canvas width — `SCALE=10`
+  is a 120 px sprite, leaving exactly the 4 px his outline needs — and only go
+  smaller to make room for props or motion. Whatever you do, **never crop**:
+  no frame may push a pixel (outline included) past the canvas edge.
+- Prefer the **full 128 grid** (`CELL=1`) for anything with curves or
+  rotation; it halves the chunkiness.
 - Keep tunables as named constants near the top with a comment — every
   renderer here is also documentation.
 - One good gag beats three mediocre ones per loop.

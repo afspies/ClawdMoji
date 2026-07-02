@@ -15,6 +15,9 @@ House rules (CI enforces the first two):
   * the loop must be seamless: drive motion with sin/cos of 2*pi*f/F so
     frame 0 and frame F match exactly.
   * stay authentic to Clawd — build ON the shared ART grid, don't reshape him.
+  * draw him BIG: default to spanning the full canvas width (SCALE=10 leaves
+    exactly the 4 px his outline needs) and only shrink to make room for
+    props/motion — but never let a single pixel crop at the canvas edge.
 """
 import sys
 from pathlib import Path
@@ -31,7 +34,8 @@ NAME = "clawd_template"          # EDIT ME: output filename stem
 N = 128                          # canvas (fixed: Slack emoji size)
 F = 16                           # frames per loop
 DUR = 90                         # ms per frame
-SCALE = 9                        # sprite cell size -> 12*9 x 8*9 = 108x72 px
+SCALE = 10                       # cell size -> 120x80 px: full canvas width
+                                 # (EDIT ME: drop it only if props need margin)
 
 # ---- palette (P-mode GIF: index 0 is transparent) --------------------------
 COLORS = [
