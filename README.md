@@ -4,7 +4,7 @@ Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus six
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
-| **Clawd** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
+| **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
 | **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 |  |
@@ -50,7 +50,7 @@ the white-outline dilation the renderers share.
 
 ## The emoji
 
-### Base — [`base/render.py`](emoji/base/render.py)
+### Original Clawdster — [`base/render.py`](emoji/base/render.py)
 The grid rendered with integer-pixel cells (10 px) so it stays razor-sharp at
 any zoom. Outputs the padded square `clawd_emoji.png` and a tight,
 exactly-proportioned `clawd_emoji_tight.png`.
