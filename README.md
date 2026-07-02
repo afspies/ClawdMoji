@@ -4,10 +4,10 @@ Pixel-perfect recreations of the **Clawd** mascot as Slack emoji, plus six
 animated variants. Everything is generated programmatically from the original
 logo — no image editor involved.
 
-| Base | "This is fine" 🔥 | Rainy day 🌧️ | Surfing 🏄 |
+| **Clawd** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
-| **Mariachi 🪇** | **Bug catcher 🦋** | **Robin Hood 🏹** |  |
+| **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 |  |
 | ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) |  |
 
 All outputs are **128×128 PNG/GIF** with transparent backgrounds, sized for
@@ -55,8 +55,9 @@ The grid rendered with integer-pixel cells (10 px) so it stays razor-sharp at
 any zoom. Outputs the padded square `clawd_emoji.png` and a tight,
 exactly-proportioned `clawd_emoji_tight.png`.
 
-### "This is fine" — [`fire/render.py`](emoji/fire/render.py)
-Calm Clawd in front of a burning room, composited from two layers:
+### This is Clawd 🔥 — [`fire/render.py`](emoji/fire/render.py)
+Calm Clawd in front of a burning room — the "this is fine" meme — composited from
+two layers:
 - **fire (back):** a real [Doom-fire](https://fabiensanglard.net/doom_fire_psx/)
   simulation on a coarse 32-grid — a hot source row propagates upward with
   random decay + flicker, mapped through the classic dark→red→orange→yellow
@@ -72,7 +73,7 @@ hidden by the natural flicker). A static fallback is saved as `clawd_fire_still.
 > ⚠️ `clawd_fire.gif` is ~102 KB — just under Slack's 128 KB cap. Lower `MAXL`
 > or raise `DUR` if you need it smaller.
 
-### Rainy day — [`rain/render.py`](emoji/rain/render.py)
+### London Clawd 🌧️ — [`rain/render.py`](emoji/rain/render.py)
 Clawd under a storm cloud, four composited layers (cloud → back rain → Clawd →
 front rain):
 - **cloud:** a full-width band of churning grey with a ragged underside; its
@@ -87,7 +88,7 @@ Here the **loop is exactly seamless by construction**: rain wraps on a vertical
 tile (`V·F` is a multiple of `TILE`), the cloud wraps on a horizontal tile
 (`S·F = P`), and splashes are a pure function of `frame mod F`.
 
-### Surfing — [`surf/render.py`](emoji/surf/render.py)
+### Clawd Surfing 🏄 — [`surf/render.py`](emoji/surf/render.py)
 Clawd dropping down the face of a breaking wave on a red surfboard, composited
 back-to-front (ocean → crest foam → crest spray → Clawd+board → waterline
 wash + bow-spray).
@@ -114,7 +115,7 @@ whole number of cycles over the loop (phase `2π·(… − k·f/F)`); the crest 
 is a pure function of `frame mod F`; the waterline wash is a static ragged
 pattern.
 
-### Mariachi — [`mariachi/render.py`](emoji/mariachi/render.py)
+### Mariachlawd 🪇 — [`mariachi/render.py`](emoji/mariachi/render.py)
 Clawd in a big straw sombrero, gripping a maraca by the handle in each hand and
 shaking them as he dances. Like surf it renders on the **full 128 grid**
 (`CELL=1`) so the sombrero's curves and the round bulbs stay crisp:
@@ -133,7 +134,7 @@ The **loop is seamless by construction**: the side-step is `sin(2π·f/F)`, the
 bounce is `|sin(2π·f/F)|`, the maraca shake is `sin(2π·2f/F)` (two shakes per
 loop) and the note bob is `sin`/`cos` of `2π·f/F` — all equal at `f=0` and `f=F`.
 
-### Bug catcher — [`bugcatcher/render.py`](emoji/bugcatcher/render.py)
+### Bug Claught 🦋 — [`bugcatcher/render.py`](emoji/bugcatcher/render.py)
 Clawd out in a sunny meadow in a pith helmet and a collector's satchel, swinging
 a handheld net at a butterfly that keeps fluttering just out of reach. Full 128
 grid (`CELL=1`) so the helmet dome, the mesh hoop and the butterfly stay crisp.
@@ -157,7 +158,7 @@ butterfly path is `sin`/`sin(2·)` of `2π·f/F`, the wing flap is `cos(2π·3f/
 and `f=F`. Because the field fills the whole square, the GIF is written as full
 opaque frames (`disposal=1`, no transparency) so nothing flickers.
 
-### Robin Hood — [`robinhood/render.py`](emoji/robinhood/render.py)
+### Clawdin Hood 🏹 — [`robinhood/render.py`](emoji/robinhood/render.py)
 A cute forest archer: Clawd in a pointed feathered cap and a green tunic
 (belt + buckle, zig-zag hem, little boots), a quiver slung across his back,
 drawing a bow and loosing an arrow that streaks off to the right — over and over.
