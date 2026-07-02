@@ -1,0 +1,39 @@
+name: "Emoji idea 💡"
+description: "Suggest a new Clawd variant — no code needed, puns encouraged"
+title: "[idea] "
+labels: ["emoji idea"]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Working name
+      description: "Bonus points for a pun (Mariachlawd, Clawdin Hood, Clawd Injection…)"
+      placeholder: "Clawd Monet 🎨"
+    validations:
+      required: true
+  - type: textarea
+    id: scene
+    attributes:
+      label: The scene
+      description: What is Clawd wearing / holding / standing in?
+      placeholder: "Beret, palette in one little hand, in front of an easel…"
+    validations:
+      required: true
+  - type: textarea
+    id: loop
+    attributes:
+      label: The loop
+      description: Emoji here loop seamlessly — what moves, over and over?
+      placeholder: "He dabs at the canvas; a blob of paint appears; it drips off; repeat."
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Do you want to build it?
+      options:
+        - "I'd like to build it myself (see CONTRIBUTING.md + emoji/_template)"
+        - "I'd love it if someone else built it"
+        - "Happy either way"
+    validations:
+      required: true

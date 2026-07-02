@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "Show & tell 🦀"
+    url: https://github.com/afspies/ClawdMoji/discussions
+    about: "Made a Clawd for your workspace? Show it off in Discussions."

@@ -1,0 +1,24 @@
+name: "Bug report 🐛"
+description: "A renderer fails, an output breaks Slack's limits, or a loop has a visible seam"
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: input
+    id: emoji
+    attributes:
+      label: Which emoji / script?
+      placeholder: "emoji/fire/render.py"
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: Error output, or what looks wrong (a screenshot helps for visual seams).
+    validations:
+      required: true
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "Python 3.12, Pillow 10.4, NumPy 2.1, macOS 15"

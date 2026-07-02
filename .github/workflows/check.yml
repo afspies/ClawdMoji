@@ -1,0 +1,31 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow numpy
+
+      - name: Every renderer still runs
+        run: |
+          for r in emoji/*/render.py; do
+            echo "== $r"
+            python3 "$r"
+          done
+
+      - name: Rendered outputs meet Slack constraints
+        run: python3 tools/check_emoji.py
+
+      - name: Gallery (README table + docs site) is up to date
+        run: |
+          git checkout -- emoji   # compare gallery against committed outputs
+          python3 tools/gen_gallery.py --check
