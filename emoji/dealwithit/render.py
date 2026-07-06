@@ -57,19 +57,20 @@ PAL = bytes([c for rgb in COLORS for c in rgb] + [0] * (768 - 3 * len(COLORS)))
 SH, SW = 8 * SCALE, 12 * SCALE           # sprite 80 x 120
 Y0, X0 = (N - SH) // 2, (N - SW) // 2    # 24, 4
 
-BAR_X0, BAR_X1 = 25, 102                 # top bar spans the head, ear to ear
-LENSES = [(30, 48), (80, 98)]            # x-ranges; centred on the eye cells
-BAR_H = 3                                # bar rows gy .. gy+2
-LENS_H = 10                              # lens rows gy+3 .. gy+12
-REST = 31                                # gy at rest: lenses cover the eyes exactly
+BAR_X0, BAR_X1 = 23, 104                 # top bar spans the head, ear to ear
+LENSES = [(26, 51), (77, 102)]           # x-ranges: fat lenses centred on the eyes
+BAR_H = 4                                # thick bar: rows gy .. gy+3
+LENS_H = 14                              # tall lenses: classic chunky thug-life block
+REST = 30                                # gy at rest: lenses swallow the eyes whole
+TOP = -(BAR_H + LENS_H + 3)             # fully off-screen above (gy for the drop)
 
 # glasses y per frame (None = off-screen); gravity in, rocket out
 GY = [None, None]                                        # f0-1  empty beat
-GY += [-17 + round(48 * ((f / 10) ** 2)) for f in range(11)]  # f2-12 fall -17 -> 31
+GY += [round(TOP + (REST - TOP) * (f / 10) ** 2) for f in range(11)]  # f2-12 fall
 GY += [REST - 2, REST]                                   # f13-14 bounce, settle
 GY += [REST] * 16                                        # f15-30 the hold
-GY += [REST + 2, 16, -6, None, None]                     # f31-35 dip, yoink, gone
-assert len(GY) == F and GY[0] is None                    # wraps to f0 exactly
+GY += [REST + 2, 12, TOP, None, None]                    # f31-35 dip, yoink, gone
+assert len(GY) == F and GY[0] is None and GY[12] == REST  # wraps to f0 exactly
 
 SHAKE = {12: 1}                          # impact frame: everything jolts down 1 px
 TEXT_ON = range(15, 31)                  # frames with 'CLAWD LIFE' visible
