@@ -73,9 +73,25 @@ GY += [REST + 2, 12, TOP, None, None]                    # f31-35 dip, yoink, go
 assert len(GY) == F and GY[0] is None and GY[12] == REST  # wraps to f0 exactly
 
 SHAKE = {12: 1}                          # impact frame: everything jolts down 1 px
-TEXT_ON = range(15, 31)                  # frames with 'CLAWD LIFE' visible
+TEXT_ON = range(15, 34)                  # frames with 'CLAWD LIFE' visible
 TEXT_DY = {15: -4, 16: 1}                # stamp overshoot, rebound
+# tail dissolve: GIF has no alpha, so we thin the text with an ordered dither.
+# The banner sits below Clawd on empty canvas, so dropped pixels read as a fade.
+TEXT_FADE = {28: 0.82, 29: 0.64, 30: 0.46, 31: 0.30, 32: 0.16, 33: 0.05}
 GLINT_F0, GLINT_STEP = 20, 4             # glint sweep start frame / px per frame
+
+
+def _bayer(n):
+    """Recursive n x n Bayer matrix (n a power of two), values 0 .. n*n-1."""
+    if n == 1:
+        return np.zeros((1, 1), dtype=int)
+    m = _bayer(n // 2)
+    return np.block([[4 * m, 4 * m + 2], [4 * m + 3, 4 * m + 1]])
+
+
+# per-pixel dither thresholds in (0,1), tiled across the canvas
+_B = (_bayer(8) + 0.5) / 64.0
+THRESH = np.tile(_B, (N // 8 + 1, N // 8 + 1))[:N, :N]
 
 # ---- Pricedown-ish slab font: 5x8 cells (W is 7), doubled to 10x16 px ------
 FONT = {
@@ -199,15 +215,20 @@ def paint_glint(g, gy, p):
                     g[y, x + dx] = GLINT
 
 
-def paint_banner(g, dy):
-    """GTA logo treatment: 2 px drop shadow, 1 px black outline, white fill."""
+def paint_banner(g, dy, opacity=1.0):
+    """GTA logo treatment: 2 px drop shadow, 1 px black outline, white fill.
+    `opacity` < 1 dissolves the whole stamp via an ordered dither, so the tail
+    of the loop fades out instead of blinking off."""
     shadow = np.zeros((N, N), dtype=bool)
     put_mask(shadow, BANNER, TY + dy + 2, TX + 2, True)
     body = np.zeros((N, N), dtype=bool)
     put_mask(body, BANNER, TY + dy, TX, True)
-    g[shadow & ~body] = TEXT_DK
-    g[border_mask(body, pen_square(1))] = TEXT_DK
-    g[body] = TEXT
+    ink = (shadow & ~body) | border_mask(body, pen_square(1)) | body
+    if opacity < 1.0:
+        ink &= THRESH < opacity                                    # dither dissolve
+    g[ink & (shadow & ~body)] = TEXT_DK
+    g[ink & border_mask(body, pen_square(1))] = TEXT_DK
+    g[ink & body] = TEXT
 
 
 def compose(f):
@@ -226,7 +247,7 @@ def compose(f):
     g[border_mask(g != 0, pen_disk(2))] = OUTLINE                  # sacred 2 px
 
     if f in TEXT_ON:
-        paint_banner(g, TEXT_DY.get(f, 0))
+        paint_banner(g, TEXT_DY.get(f, 0), TEXT_FADE.get(f, 1.0))
     return g
 
 
