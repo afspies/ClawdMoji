@@ -11,10 +11,15 @@ Each emoji folder owns a small meta.json:
       "slack": "clawd-robinhood",       # suggested :name:
       "file": "clawd_robinhood.gif",    # the output to show
       "blurb": "one-liner",             # used on the docs site
-      "author": "afspies"               # github handle
+      "author": "afspies"               # github handle — credited under the emoji
     }
 
-so adding a variant never means hand-editing the README table — run
+The author is credited under each emoji (README table + docs cards) and in the
+README contributors strip. The repo owner's credits render as "Clawd himself"
+— self-crediting every card would be obnoxious — and he appears in the strip
+as Clawd's pixel avatar.
+
+So adding a variant never means hand-editing the README table — run
 
     python3 tools/gen_gallery.py          # rewrite README + docs/index.html
     python3 tools/gen_gallery.py --check  # exit 1 if anything is stale (CI)
@@ -28,6 +33,9 @@ REPO = "afspies/ClawdMoji"
 RAW = f"https://raw.githubusercontent.com/{REPO}/main"
 COLS = 4
 BEGIN, END = "<!-- gallery:begin -->", "<!-- gallery:end -->"
+C_BEGIN, C_END = "<!-- contributors:begin -->", "<!-- contributors:end -->"
+OWNER = "afspies"  # the owner's credits render as Clawd himself (see docstring)
+OWNER_CREDIT = "Clawd himself 🦀"
 
 
 def load_metas():
@@ -47,6 +55,12 @@ def label(m):
     return f"**{m['title']}** {m['emoji']}".strip()
 
 
+def credit_md(m):
+    if m["author"] == OWNER:
+        return f"<sub>by {OWNER_CREDIT}</sub>"
+    return f"<sub>by [@{m['author']}](https://github.com/{m['author']})</sub>"
+
+
 def readme_table(metas):
     rows = [metas[i:i + COLS] for i in range(0, len(metas), COLS)]
     lines = []
@@ -62,26 +76,60 @@ def readme_table(metas):
             )
             + " |"
         )
+        lines.append("| " + " | ".join([credit_md(m) for m in row] + pad) + " |")
     return "\n".join(lines)
 
 
-def render_readme(metas, text):
+def contributors_strip(metas):
+    """One avatar per unique author, in gallery order; the owner is Clawd."""
+    seen, cells = set(), []
+    for m in metas:
+        a = m["author"]
+        if a in seen:
+            continue
+        seen.add(a)
+        if a == OWNER:
+            cells.append(
+                '<a href="https://afspies.github.io/ClawdMoji/">'
+                '<img src="emoji/base/clawd_emoji.png" width="64" height="64" '
+                'alt="Clawd himself" title="Clawd himself"></a>'
+            )
+        else:
+            cells.append(
+                f'<a href="https://github.com/{a}">'
+                f'<img src="https://github.com/{a}.png?size=128" width="64" height="64" '
+                f'alt="@{a}" title="@{a}"></a>'
+            )
+    return "\n".join(cells)
+
+
+def splice(text, begin, end, body):
     try:
-        head, rest = text.split(BEGIN, 1)
-        _, tail = rest.split(END, 1)
+        head, rest = text.split(begin, 1)
+        _, tail = rest.split(end, 1)
     except ValueError:
-        sys.exit(f"README.md is missing the {BEGIN} / {END} markers")
-    return head + BEGIN + "\n" + readme_table(metas) + "\n" + END + tail
+        sys.exit(f"README.md is missing the {begin} / {end} markers")
+    return head + begin + "\n" + body + "\n" + end + tail
+
+
+def render_readme(metas, text):
+    text = splice(text, BEGIN, END, readme_table(metas))
+    return splice(text, C_BEGIN, C_END, contributors_strip(metas))
 
 
 def render_docs(metas):
     cards = []
     for m in metas:
         flair = f" {m['emoji']}" if m["emoji"] else ""
+        if m["author"] == OWNER:
+            credit = f"by {OWNER_CREDIT}"
+        else:
+            credit = f'by <a href="https://github.com/{m["author"]}">@{m["author"]}</a>'
         cards.append(f"""\
       <div class="card">
         <img src="{RAW}/emoji/{m['dir']}/{m['file']}" alt="{m['title']}" width="128" height="128">
         <h2>{m['title']}{flair}</h2>
+        <p class="by">{credit}</p>
         <p>{m['blurb']}</p>
         <button class="name" data-name=":{m['slack']}:" title="click to copy">:{m['slack']}:</button>
         <a class="dl" href="{RAW}/emoji/{m['dir']}/{m['file']}" download>download</a>
@@ -108,6 +156,8 @@ def render_docs(metas):
   .card img {{ image-rendering: pixelated; width: 128px; height: 128px; }}
   .card h2 {{ font-size: 1.05rem; margin-top: .6rem; }}
   .card p {{ color: var(--dim); font-size: .8rem; margin: .35rem 0 .7rem; min-height: 3.6em; }}
+  .card p.by {{ font-size: .7rem; margin: .15rem 0 0; min-height: 0; }}
+  .card p.by a {{ color: var(--clawd); text-decoration: none; }}
   .name {{ background: #2c2839; color: var(--clawd); border: 1px solid #3a3550; border-radius: 6px; font: inherit; font-size: .85rem; padding: .25rem .6rem; cursor: pointer; }}
   .name.copied::after {{ content: " ✓"; }}
   .dl {{ display: block; color: var(--dim); font-size: .75rem; margin-top: .5rem; }}

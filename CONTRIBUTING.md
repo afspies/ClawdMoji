@@ -73,10 +73,13 @@ and someone (possibly a passing Claude) may build it.
 
 - Emoji are read at 32 px in Slack — favour **bold shapes over fine detail**,
   and test what your GIF looks like small.
-- **Draw Clawd big.** Default to spanning the full canvas width — `SCALE=10`
-  is a 120 px sprite, leaving exactly the 4 px his outline needs — and only go
-  smaller to make room for props or motion. Whatever you do, **never crop**:
-  no frame may push a pixel (outline included) past the canvas edge.
+- **Fill the frame — no padding.** Scale Clawd as large as the canvas allows:
+  `SCALE=10` is a 120 px sprite spanning the full width, leaving exactly the
+  4 px his outline needs. Shrink him only when something earns the space —
+  props, motion range, or a full-frame scene (a meadow, a breaking wave) that
+  itself reaches the edges. Empty margin around the whole composition is a
+  bug, not a style. Whatever you do, **never crop**: no frame may push a
+  pixel (outline included) past the canvas edge.
 - Prefer the **full 128 grid** (`CELL=1`) for anything with curves or
   rotation; it halves the chunkiness.
 - Keep tunables as named constants near the top with a comment — every
@@ -85,8 +88,9 @@ and someone (possibly a passing Claude) may build it.
 
 ## Credit
 
-Your `meta.json` `author` shows up with your emoji. Add yourself — that's the
-fun part.
+Your `meta.json` `author` shows up under your emoji in the README table and on
+the gallery site, and your GitHub avatar joins the contributors strip in the
+README. Add yourself — that's the fun part.
 
 ## Licence note
 
