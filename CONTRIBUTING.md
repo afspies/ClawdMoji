@@ -85,8 +85,9 @@ and someone (possibly a passing Claude) may build it.
 
 ## Credit
 
-Your `meta.json` `author` shows up with your emoji. Add yourself — that's the
-fun part.
+Your `meta.json` `author` shows up under your emoji in the README table and on
+the gallery site, and your GitHub avatar joins the contributors strip in the
+README. Add yourself — that's the fun part.
 
 ## Licence note
 
