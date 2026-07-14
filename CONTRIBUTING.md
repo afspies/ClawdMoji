@@ -80,6 +80,20 @@ and someone (possibly a passing Claude) may build it.
   itself reaches the edges. Empty margin around the whole composition is a
   bug, not a style. Whatever you do, **never crop**: no frame may push a
   pixel (outline included) past the canvas edge.
+- **Measure the fit — don't eyeball it.** The still frame lies: what crops
+  (or wastes margin) is the *animation extremes* — the far end of a sway,
+  step, or swing. Take the union bounding box over the whole loop and grow
+  `SCALE` / amplitudes until it sits within ~1–2 px of the canvas edge:
+
+  ```python
+  import numpy as np
+  pts = [np.nonzero(np.asarray(compose(f))) for f in range(F)]
+  ys = np.concatenate([p[0] for p in pts]); xs = np.concatenate([p[1] for p in pts])
+  print(f"margins  t {ys.min()}  b {127 - ys.max()}  l {xs.min()}  r {127 - xs.max()}")
+  ```
+
+  (For opaque full-frame scenes, mask to Clawd's palette indices instead of
+  `nonzero`.)
 - Prefer the **full 128 grid** (`CELL=1`) for anything with curves or
   rotation; it halves the chunkiness.
 - Keep tunables as named constants near the top with a comment — every
