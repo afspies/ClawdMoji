@@ -64,24 +64,24 @@ T_UP, T_DOWN = 0.25, 0.70
 FLIP_H = 26        # apex height above the plate (px)
 
 # arm swing: positive lobe of sin(2*pi*(t - T0)), peaking as the snag launches
-ARM_T0, ARM_A = 0.05, 38.0
+ARM_T0, ARM_A = 0.05, 32.0
 
 # ---- layout -----------------------------------------------------------
-SCALE = 6                          # 12x8 art -> 72x48 body
-BODY_Y, BODY_CX = 28, 56           # body top / centre column (world px)
+SCALE = 8                          # 12x8 art -> 96x64 body
+BODY_Y, BODY_CX = 24, 56           # body top / centre column (world px)
 
 PLATE_Y  = 72                      # hotplate top surface
-PLATE_X0, PLATE_X1 = 18, 110       # hotplate extent
+PLATE_X0, PLATE_X1 = 10, 118       # hotplate extent
 CART_Y0, CART_Y1 = 79, 98          # red cart box
 LEG_Y1 = 120                       # feet of the barbie
 
-SHOULDER = (BODY_Y + 18, BODY_CX + 30)     # right side-bump, world px
-SNAG_SLOT = (PLATE_Y - 3, 99)              # the flip happens under the spatula
-RESTING = [(PLATE_Y - 3, 46), (PLATE_Y - 3, 64)]   # snags that stay put
-PRAWN_AT = (PLATE_Y - 2, 30)
+SHOULDER = (BODY_Y + 24, BODY_CX + 38)     # right side-bump, world px
+SNAG_SLOT = (PLATE_Y - 3, 104)             # the flip happens under the spatula
+RESTING = [(PLATE_Y - 3, 36), (PLATE_Y - 3, 62)]   # snags that stay put
+PRAWN_AT = (PLATE_Y - 2, 16)
 
-# smoke puffs: (x, phase) -- rise from the plate and fade
-PUFFS = [(36, 0.00), (36, 0.50), (60, 0.25), (60, 0.75), (84, 0.40), (84, 0.90)]
+# smoke puffs: (x, phase) -- rise from the plate, threading between the eyes
+PUFFS = [(24, 0.00), (24, 0.50), (56, 0.25), (56, 0.75), (88, 0.40), (88, 0.90)]
 SMOKE_RISE = 34
 
 
@@ -137,18 +137,20 @@ def build_arm():
     sy, sx = 20, 14                                   # shoulder (upper-left)
     a = math.radians(-50)                             # down-and-out
     dy, dx = -math.sin(a), math.cos(a)
-    hy, hx = sy + dy*11, sx + dx*11                   # hand
+    hy, hx = sy + dy*12, sx + dx*12                   # hand
     ey, ex = sy + dy*22, sx + dx*22                   # end of the handle
-    thick_line(A, sy, sx, hy, hx, 2, CLAWD)           # orange arm
+    thick_line(A, sy, sx, hy, hx, 3, CLAWD)           # orange arm
     thick_line(A, hy, hx, ey, ex, 1, WOOD)            # wooden handle
-    # flat steel blade, perpendicular-ish to the handle
+    # flat steel blade, perpendicular-ish to the handle (sampled at half-px
+    # steps -- integer steps along a diagonal leave holes for the outline
+    # pen to fill, which reads as a checkerboard)
     py, px = -dx, dy                                  # unit normal
-    for s in range(0, 9):                             # blade length
+    for s in np.arange(0, 8.51, 0.5):                 # blade length
         by, bx = ey + dy*s, ex + dx*s
-        for w in range(-3, 4):                        # blade width
+        for w in np.arange(-4, 4.01, 0.5):            # blade width
             y, x = int(round(by + py*w)), int(round(bx + px*w))
             if 0 <= y < H and 0 <= x < W:
-                A[y, x] = SMOKE1 if s else STEEL
+                A[y, x] = SMOKE1 if s >= 1 else STEEL
     A[border_mask(A > 0, pen_disk(1))] = WHITE
     return A, (sy, sx)
 
@@ -177,11 +179,11 @@ def rot(arr, angle):
 
 def build_snag():
     """One sausage: a fat little capsule with a shaded underside."""
-    A = np.zeros((11, 17), dtype=np.uint8)
-    thick_line(A, 5, 4, 5, 12, 2, SNAG)
-    for x in range(3, 14):                            # shaded underside
-        if A[7, x] == SNAG:
-            A[7, x] = SNAG_D
+    A = np.zeros((14, 22), dtype=np.uint8)
+    thick_line(A, 6, 5, 6, 16, 3, SNAG)
+    for x in range(3, 19):                            # shaded underside
+        if A[9, x] == SNAG:
+            A[9, x] = SNAG_D
     A[border_mask(A > 0, pen_disk(1))] = WHITE
     return A
 
@@ -243,8 +245,6 @@ def compose(f):
     ph = 2*math.pi * t
     bob = round(BOB * math.sin(ph))
 
-    draw_smoke(g, f)                                  # smoke behind everything
-
     SX = 12*SCALE
     blit(g, BODY, BODY_Y + bob - BPAD, BODY_CX - SX//2 - BPAD)   # Clawd
 
@@ -252,6 +252,9 @@ def compose(f):
     R = rot(CEN_ARM, swing)
     blit(g, R, SHOULDER[0] + bob - R.shape[0]//2,
          SHOULDER[1] - R.shape[1]//2)                 # arm + spatula
+
+    draw_smoke(g, f)                                  # plate smoke drifts up
+                                                      # in front of Clawd
 
     draw_barbie(g)                                    # barbie covers his legs
 

@@ -46,7 +46,7 @@ pal_bytes = bytes([c for rgb in COLORS for c in rgb] + [0]*(768 - 3*len(COLORS))
 # ---- timing / motion --------------------------------------------------
 F    = 16          # frames in the loop
 DUR  = 100         # ms/frame
-SWAY = 5.0         # pendulum sway amplitude (degrees)
+SWAY = 4.0         # pendulum sway amplitude (degrees)
 BOB  = 1.5         # vertical bob (px)
 
 # ---- the Southern Cross (flag layout, roughly to proportion) -----------
@@ -61,12 +61,12 @@ CRUX = [
 # background twinkle scatter: (y, x, phase)
 BGSTARS = [
     (8, 60, 0.4), (20, 118, 1.7), (46, 122, 3.1), (6, 100, 2.2),
-    (74, 6, 4.4), (88, 122, 0.9), (108, 10, 3.8), (118, 96, 1.2),
-    (98, 48, 5.5), (68, 30, 2.9), (118, 24, 1.9), (34, 62, 4.9),
+    (74, 6, 4.4), (88, 14, 0.9), (108, 10, 3.8), (118, 96, 1.2),
+    (120, 56, 5.5), (68, 30, 2.9), (118, 24, 1.9), (34, 62, 4.9),
 ]
 
 # ---- Clawd, rotated 180 -----------------------------------------------
-SCALE = 6                                   # 12x8 art -> 72x48
+SCALE = 8                                   # 12x8 art -> 96x64
 SX, SY = 12*SCALE, 8*SCALE
 
 
@@ -88,9 +88,10 @@ def build_body():
 BODY = build_body()
 # pendulum pivot: between the (now upward) leg tips, top-centre of the sprite
 PIVOT = (4, BODY.shape[1]//2)
-# world position of the pivot -- legs near the top edge, body hanging right of
-# centre so the Cross keeps clear sky on the upper-left
-WPY, WPX = 30, 84
+# world position of the pivot -- body hanging low and right of centre; only
+# his narrow leg-half rises past mid-frame, so the Cross keeps clear sky on
+# the upper-left
+WPY, WPX = 46, 72
 
 
 def _center_on(A, cy, cx):

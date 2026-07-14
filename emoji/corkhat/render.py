@@ -53,40 +53,40 @@ F     = 16         # frames in the loop
 DUR   = 90         # ms/frame
 STEP  = 5.0        # left<->right travel (px)
 HOP   = 2.0        # bounce (px, two hops/loop)
-SWING = 3.0        # cork swing amplitude (px at the cork)
+SWING = 4.0        # cork swing amplitude (px at the cork)
 
 # ---- body + hat layout (in the padded body canvas) ---------------------
-SCALE = 6                          # 12x8 art -> 72x48 body
+SCALE = 8                          # 12x8 art -> 96x64 body
 SX, SY = 12*SCALE, 8*SCALE
-AW, AH = 150, 118                  # body canvas
-BX, BY = (AW - SX)//2, 46          # body top-left
+AW, AH = 110, 100                  # body canvas
+BX, BY = (AW - SX)//2, 28          # body top-left
 CX0    = BX + SX//2                # body centre column
 
 BRIM_Y  = BY - 2                   # brim line sits just over the head
-BRIM_HW = 33                       # brim half-width
-BRIM_TH = 4
-CROWN_H = 16
-CROWN_TW, CROWN_BW = 12, 17        # crown half-width, top and base
+BRIM_HW = 44                       # brim half-width
+BRIM_TH = 5
+CROWN_H = 21
+CROWN_TW, CROWN_BW = 16, 23        # crown half-width, top and base
 
 # corks: (anchor dx from centre, string length px, swing phase)
-# anchors avoid the eye columns (dx ~ +-15) so no string crosses an eye
+# anchors avoid the eye columns (dx ~ +-20) so no string crosses an eye
 CORKS = [
-    (-30, 9, 0.0),
-    (-21, 15, 1.9),
-    (0,   11, 3.5),
-    (21,  16, 5.0),
-    (30,  10, 2.7),
+    (-40, 12, 0.0),
+    (-28, 20, 1.9),
+    (0,   15, 3.5),
+    (28,  21, 5.0),
+    (40,  13, 2.7),
 ]
-CORK_W, CORK_H = 5, 7              # cork size (they're little barrels)
+CORK_W, CORK_H = 6, 8              # cork size (they're little barrels)
 
 # flies: (centre y, centre x, x-amplitude, y-amplitude, phase, direction)
 FLIES = [
-    (32, 30, 11, 8, 0.0, 1),
-    (42, 100, 10, 7, math.pi, -1),
+    (44, 22, 11, 9, 0.0, 1),
+    (54, 106, 10, 8, math.pi, -1),
 ]
 
 # world placement of the body-canvas origin (before the step/hop)
-WY0, WX0 = 12, (N - AW)//2
+WY0, WX0 = 29, (N - AW)//2
 
 
 def draw_hat(A):
@@ -110,7 +110,7 @@ def draw_hat(A):
             elif frac > 0.5:  c = FELT_D
             A[ry, x] = c
 
-    band_top = BRIM_Y - 5                   # dark hatband above the brim
+    band_top = BRIM_Y - 7                   # dark hatband above the brim
     for ry in range(band_top, BRIM_Y - 1):
         for dx in range(-CROWN_BW, CROWN_BW + 1):
             x = cx + dx
@@ -122,7 +122,7 @@ def draw_hat(A):
         if not (0 <= x < W):
             continue
         tt = dx / BRIM_HW
-        mid = BRIM_Y + 1.5 * (1 - tt*tt) - 3.0 * (tt*tt)
+        mid = BRIM_Y + 2.0 * (1 - tt*tt) - 4.0 * (tt*tt)
         for k in range(BRIM_TH + 1):
             y = int(round(mid - BRIM_TH/2 + k))
             if 0 <= y < H:
@@ -131,7 +131,7 @@ def draw_hat(A):
                 else:                   c = FELT_M
                 A[y, x] = c
 
-    for dx in range(-CROWN_BW - 5, CROWN_BW + 6):   # brim shadow on the face
+    for dx in range(-CROWN_BW - 7, CROWN_BW + 8):   # brim shadow on the face
         x = cx + dx
         y = BRIM_Y + BRIM_TH
         if 0 <= y < H and 0 <= x < W and A[y, x] == CLAWD:
@@ -210,7 +210,7 @@ def compose(f):
     for (dx, length, phase) in CORKS:
         ax = bx0 + CX0 + dx
         tt = dx / BRIM_HW
-        ay = int(round(brim_world_y + 1.5 * (1 - tt*tt) - 3.0 * (tt*tt)))
+        ay = int(round(brim_world_y + 2.0 * (1 - tt*tt) - 4.0 * (tt*tt)))
         sway = SWING * math.sin(ph + phase)
         draw_cork(g, ay, ax, length, sway)
 
