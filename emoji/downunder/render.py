@@ -46,27 +46,27 @@ pal_bytes = bytes([c for rgb in COLORS for c in rgb] + [0]*(768 - 3*len(COLORS))
 # ---- timing / motion --------------------------------------------------
 F    = 16          # frames in the loop
 DUR  = 100         # ms/frame
-SWAY = 4.0         # pendulum sway amplitude (degrees)
+SWAY = 3.0         # pendulum sway amplitude (degrees)
 BOB  = 1.5         # vertical bob (px)
 
 # ---- the Southern Cross (flag layout, roughly to proportion) -----------
 # (y, x, size, twinkle-phase) -- size is the cross-arm length in px
 CRUX = [
     (14, 22, 4, 0.0),    # gamma  (top)
-    (56, 26, 5, 1.3),    # alpha  (bottom, the brightest)
+    (56, 20, 5, 1.3),    # alpha  (bottom, the brightest)
     (32, 8, 4, 2.6),     # beta   (left)
     (28, 40, 4, 3.9),    # delta  (right)
-    (42, 32, 2, 5.2),    # epsilon (the little fifth star)
+    (44, 26, 2, 5.2),    # epsilon (the little fifth star)
 ]
 # background twinkle scatter: (y, x, phase)
 BGSTARS = [
     (8, 60, 0.4), (20, 118, 1.7), (46, 122, 3.1), (6, 100, 2.2),
-    (74, 6, 4.4), (88, 14, 0.9), (108, 10, 3.8), (118, 96, 1.2),
-    (120, 56, 5.5), (68, 30, 2.9), (118, 24, 1.9), (34, 62, 4.9),
+    (74, 6, 4.4), (58, 44, 0.9), (108, 10, 3.8), (72, 120, 1.2),
+    (30, 104, 5.5), (72, 14, 2.9), (124, 12, 1.9), (34, 62, 4.9),
 ]
 
 # ---- Clawd, rotated 180 -----------------------------------------------
-SCALE = 8                                   # 12x8 art -> 96x64
+SCALE = 9                                   # 12x8 art -> 108x72
 SX, SY = 12*SCALE, 8*SCALE
 
 
@@ -91,7 +91,7 @@ PIVOT = (4, BODY.shape[1]//2)
 # world position of the pivot -- body hanging low and right of centre; only
 # his narrow leg-half rises past mid-frame, so the Cross keeps clear sky on
 # the upper-left
-WPY, WPX = 46, 72
+WPY, WPX = 50, 68
 
 
 def _center_on(A, cy, cx):

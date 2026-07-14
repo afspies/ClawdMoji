@@ -61,27 +61,27 @@ BOB = 1.5          # Clawd's idle bob (px)
 
 # the flip: launch/land window (fractions of the loop, interior so it loops)
 T_UP, T_DOWN = 0.25, 0.70
-FLIP_H = 26        # apex height above the plate (px)
+FLIP_H = 34        # apex height above the plate (px)
 
 # arm swing: positive lobe of sin(2*pi*(t - T0)), peaking as the snag launches
-ARM_T0, ARM_A = 0.05, 32.0
+ARM_T0, ARM_A = 0.05, 28.0
 
 # ---- layout -----------------------------------------------------------
-SCALE = 8                          # 12x8 art -> 96x64 body
-BODY_Y, BODY_CX = 24, 56           # body top / centre column (world px)
+SCALE = 9                          # 12x8 art -> 108x72 body
+BODY_Y, BODY_CX = 18, 57           # body top / centre column (world px)
 
 PLATE_Y  = 72                      # hotplate top surface
 PLATE_X0, PLATE_X1 = 10, 118       # hotplate extent
 CART_Y0, CART_Y1 = 79, 98          # red cart box
 LEG_Y1 = 120                       # feet of the barbie
 
-SHOULDER = (BODY_Y + 24, BODY_CX + 38)     # right side-bump, world px
+SHOULDER = (BODY_Y + 27, BODY_CX + 43)     # right side-bump, world px
 SNAG_SLOT = (PLATE_Y - 3, 104)             # the flip happens under the spatula
-RESTING = [(PLATE_Y - 3, 36), (PLATE_Y - 3, 62)]   # snags that stay put
-PRAWN_AT = (PLATE_Y - 2, 16)
+RESTING = [(PLATE_Y - 3, 34), (PLATE_Y - 3, 60)]   # snags that stay put
+PRAWN_AT = (PLATE_Y - 2, 14)
 
 # smoke puffs: (x, phase) -- rise from the plate, threading between the eyes
-PUFFS = [(24, 0.00), (24, 0.50), (56, 0.25), (56, 0.75), (88, 0.40), (88, 0.90)]
+PUFFS = [(24, 0.00), (24, 0.50), (56, 0.25), (56, 0.75), (94, 0.40), (94, 0.90)]
 SMOKE_RISE = 34
 
 
@@ -135,17 +135,17 @@ def build_arm():
     H = W = 72
     A = np.zeros((H, W), dtype=np.uint8)
     sy, sx = 20, 14                                   # shoulder (upper-left)
-    a = math.radians(-50)                             # down-and-out
-    dy, dx = -math.sin(a), math.cos(a)
+    a = math.radians(-60)                             # steeply down-and-out --
+    dy, dx = -math.sin(a), math.cos(a)                # keeps the swing in frame
     hy, hx = sy + dy*12, sx + dx*12                   # hand
-    ey, ex = sy + dy*22, sx + dx*22                   # end of the handle
+    ey, ex = sy + dy*20, sx + dx*20                   # end of the handle
     thick_line(A, sy, sx, hy, hx, 3, CLAWD)           # orange arm
     thick_line(A, hy, hx, ey, ex, 1, WOOD)            # wooden handle
     # flat steel blade, perpendicular-ish to the handle (sampled at half-px
     # steps -- integer steps along a diagonal leave holes for the outline
     # pen to fill, which reads as a checkerboard)
     py, px = -dx, dy                                  # unit normal
-    for s in np.arange(0, 8.51, 0.5):                 # blade length
+    for s in np.arange(0, 6.51, 0.5):                 # blade length
         by, bx = ey + dy*s, ex + dx*s
         for w in np.arange(-4, 4.01, 0.5):            # blade width
             y, x = int(round(by + py*w)), int(round(bx + px*w))
