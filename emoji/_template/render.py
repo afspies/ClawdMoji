@@ -15,9 +15,11 @@ House rules (CI enforces the first two):
   * the loop must be seamless: drive motion with sin/cos of 2*pi*f/F so
     frame 0 and frame F match exactly.
   * stay authentic to Clawd — build ON the shared ART grid, don't reshape him.
-  * draw him BIG: default to spanning the full canvas width (SCALE=10 leaves
-    exactly the 4 px his outline needs) and only shrink to make room for
-    props/motion — but never let a single pixel crop at the canvas edge.
+  * fill the frame, no padding: scale Clawd as large as the canvas allows
+    (SCALE=10 spans the full width, leaving exactly the 4 px his outline
+    needs). Shrink him only for props, motion range, or a scene that itself
+    fills the square — dead margin around the composition is a bug. And
+    never let a single pixel crop at the canvas edge.
 """
 import sys
 from pathlib import Path

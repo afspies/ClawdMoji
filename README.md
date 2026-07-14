@@ -12,10 +12,13 @@ logo. No image editor involved.
 | **Original Clawdster** | **This is Clawd** 🔥 | **London Clawd** 🌧️ | **Clawd Surfing** 🏄 |
 |:---:|:---:|:---:|:---:|
 | ![base](emoji/base/clawd_emoji.png) | ![fire](emoji/fire/clawd_fire.gif) | ![rain](emoji/rain/clawd_rain.gif) | ![surf](emoji/surf/clawd_surf.gif) |
+| <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> |
 | **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Life** 😎 |
 | ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![dealwithit](emoji/dealwithit/clawd_dealwithit.gif) |
+| <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> |
 | **Definitely Not Clawd** 🥸 | **Clawd from Down Under** 🇦🇺 | **Cork Hat Clawd** 🪰 | **Clawd on the Barbie** 🍤 |
 | ![notclawd](emoji/notclawd/clawd_notclawd.gif) | ![downunder](emoji/downunder/clawd_downunder.gif) | ![corkhat](emoji/corkhat/clawd_corkhat.gif) | ![barbie](emoji/barbie/clawd_barbie.gif) |
+| <sub>by Clawd himself 🦀</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
@@ -261,6 +264,17 @@ New Clawd variants are very welcome — a variant is just one folder with one
 [`emoji/_template/`](emoji/_template/). Not a coder? Open an
 [emoji idea](https://github.com/afspies/ClawdMoji/issues/new?template=emoji-idea.yml)
 instead.
+
+### Contributors
+
+Every variant is credited to its `meta.json` author, under the emoji and here
+(generated like everything else — your avatar appears when your first Clawd
+lands):
+
+<!-- contributors:begin -->
+<a href="https://afspies.github.io/ClawdMoji/"><img src="emoji/base/clawd_emoji.png" width="64" height="64" alt="Clawd himself" title="Clawd himself"></a>
+<a href="https://github.com/victor-bajanov"><img src="https://github.com/victor-bajanov.png?size=128" width="64" height="64" alt="@victor-bajanov" title="@victor-bajanov"></a>
+<!-- contributors:end -->
 
 ## License
 
