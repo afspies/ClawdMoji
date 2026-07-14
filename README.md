@@ -16,9 +16,9 @@ logo. No image editor involved.
 | **Mariachlawd** 🪇 | **Bug Claught** 🦋 | **Clawdin Hood** 🏹 | **Clawd Life** 😎 |
 | ![mariachi](emoji/mariachi/clawd_mariachi.gif) | ![bugcatcher](emoji/bugcatcher/clawd_bugcatcher.gif) | ![robinhood](emoji/robinhood/clawd_robinhood.gif) | ![dealwithit](emoji/dealwithit/clawd_dealwithit.gif) |
 | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> |
-| **Definitely Not Clawd** 🥸 |  |  |  |
-| ![notclawd](emoji/notclawd/clawd_notclawd.gif) |  |  |  |
-| <sub>by Clawd himself 🦀</sub> |  |  |  |
+| **Definitely Not Clawd** 🥸 | **Clawd from Down Under** 🇦🇺 | **Cork Hat Clawd** 🪰 | **Clawd on the Barbie** 🍤 |
+| ![notclawd](emoji/notclawd/clawd_notclawd.gif) | ![downunder](emoji/downunder/clawd_downunder.gif) | ![corkhat](emoji/corkhat/clawd_corkhat.gif) | ![barbie](emoji/barbie/clawd_barbie.gif) |
+| <sub>by Clawd himself 🦀</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> | <sub>by [@victor-bajanov](https://github.com/victor-bajanov)</sub> |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
@@ -273,6 +273,7 @@ lands):
 
 <!-- contributors:begin -->
 <a href="https://afspies.github.io/ClawdMoji/"><img src="emoji/base/clawd_emoji.png" width="64" height="64" alt="Clawd himself" title="Clawd himself"></a>
+<a href="https://github.com/victor-bajanov"><img src="https://github.com/victor-bajanov.png?size=128" width="64" height="64" alt="@victor-bajanov" title="@victor-bajanov"></a>
 <!-- contributors:end -->
 
 ## License
