@@ -50,29 +50,37 @@ pal_bytes = bytes([c for rgb in COLORS for c in rgb] + [0]*(768 - 3*len(COLORS))
 # ---- timing / motion --------------------------------------------------
 F      = 12         # frames in the loop
 DUR    = 90         # ms/frame
-STEP   = 7.0        # left<->right travel (px)
-HOP    = 2.5        # bounce (px, two hops/loop)
-SHAKE  = 17.0       # maraca shake amplitude (degrees)
+STEP   = 4.0        # left<->right travel (px) -- trimmed so the maracas clear
+HOP    = 3.0        # bounce (px, two hops/loop)
+SHAKE  = 15.0       # maraca shake amplitude (degrees)
 SHAKEK = 2          # shakes per loop
 
 # ---- body + hat layout (in the padded body canvas) --------------------
-SCALE = 6                         # 12x8 art -> 72x48 body
+# Clawd's 12x8 art is wide (1.5:1) and his sombrero must be wider still, so the
+# brim caps the *width* while the body has vertical room to spare. SCALE 7 fills
+# the frame yet leaves a strip of open canvas past each body edge -- room for the
+# maracas to be held clearly *out* at arm's length (SCALE 8 swallowed them into
+# the torso). Measure the union bbox over the loop; it sits ~1-2px off each edge.
+SCALE = 7                         # 12x8 art -> 84x56 body
 SX, SY = 12*SCALE, 8*SCALE
-AW, AH = 160, 116                 # body canvas
+AW, AH = 200, 170                 # body canvas (generous; final blit clips to 128)
 BX, BY = (AW - SX)//2, 52         # body top-left
 CX0    = BX + SX//2               # body centre column
 PYB, PXB = BY + SY//2, CX0        # body reference point (hips)
-SHO_L = (BY + 18, CX0 - 20)       # shoulders (where the arms attach), body coords
-SHO_R = (BY + 18, CX0 + 20)
+SHO_L = (BY + 25, CX0 - 33)       # grip at the hand-bump (out at his side, not the torso)
+SHO_R = (BY + 25, CX0 + 33)
 
 # world placement of the body reference (keeps the dancer centred)
-WPX, WPY = 64, 74
+WPX, WPY = 64, 94
 
 # ---- arm + maraca geometry --------------------------------------------
-ARM_ANG  = 10       # rest angle above horizontal (degrees, pointing up-and-out)
-LARM     = 10       # orange upper arm length (reaches the maraca further out)
-LHANDLE  = 9        # brown handle length (holds the bulb out past the arm)
-BULB_R   = 6        # maraca bulb radius
+# Gripped at the hand and shaken up-and-out. The body is wide, so rather than
+# reach the bulbs further out (they'd clip), the handle is kept short and the
+# maraca angled up -- the bulb sits just past his hand instead of over the torso.
+ARM_ANG  = 28       # rest angle above horizontal (degrees, pointing up-and-out)
+LARM     = 8        # short orange forearm from the hand out to the grip
+LHANDLE  = 3        # short brown handle -- keeps the bulb near the hand
+BULB_R   = 7        # maraca bulb radius
 
 
 def fill_disk(A, cy, cx, r, color):
@@ -114,13 +122,13 @@ def draw_sombrero(A):
     H, W = A.shape
     cx = CX0
     brim_y   = BY - 1
-    crown_h  = 21
-    crown_th = 11              # crown half-width at the top
-    crown_bh = 15              # crown half-width at the base
-    brim_hw  = 50              # brim half-width
-    brim_th  = 4
-    brim_dip = 3               # brim droops in the middle (front edge)
-    brim_curl = 6              # brim tips curl up
+    crown_h  = 31
+    crown_th = 13              # crown half-width at the top
+    crown_bh = 18              # crown half-width at the base
+    brim_hw  = 52              # brim half-width (capped: brim is the width limit)
+    brim_th  = 5
+    brim_dip = 4               # brim droops in the middle (front edge)
+    brim_curl = 7              # brim tips curl up
 
     crown_top = brim_y - crown_h
     for ry in range(crown_top, brim_y + 1):
@@ -264,7 +272,8 @@ def place_arm(g, cen, sho, by0, bx0, angle):
 
 
 # ---- music notes bobbing overhead ------------------------------------
-NOTES = [(38, 3.0, 0.0), (90, 3.0, math.pi), (64, 3.5, 1.7)]  # (x, amp, phase)
+NOTES = [(34, 3.0, 0.0), (94, 3.0, math.pi), (64, 3.5, 1.7)]  # (x, amp, phase)
+NOTE_Y = 11         # base height of the notes (kept high so the top isn't empty)
 
 def eighth_note(g, cy, cx, color):
     for dy in range(6):
@@ -281,7 +290,7 @@ def eighth_note(g, cy, cx, color):
 def paint_notes(g, f):
     ph = 2*math.pi * f / F
     for nx, amp, phase in NOTES:
-        y = int(round(26 + amp * math.sin(ph + phase)))
+        y = int(round(NOTE_Y + amp * math.sin(ph + phase)))
         x = int(round(nx + 2 * math.cos(ph + phase)))
         eighth_note(g, y, x, GOLD)
 
