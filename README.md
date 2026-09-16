@@ -22,9 +22,9 @@ logo. No image editor involved.
 | **Moonlit Clawd** 🌛 | **Clawd Love** ❤️ | **Mad Clawd** 😠 | **Clawd 9000** 🔴 |
 | ![moonlight](emoji/moonlight/clawd_moonlight.gif) | ![love](emoji/love/clawd_love.gif) | ![mad](emoji/mad/clawd_mad.gif) | ![clawd9000](emoji/clawd9000/clawd_9000.gif) |
 | <sub>by [@Nitjsefnie](https://github.com/Nitjsefnie)</sub> | <sub>by [@Nitjsefnie](https://github.com/Nitjsefnie)</sub> | <sub>by [@Nitjsefnie](https://github.com/Nitjsefnie)</sub> | <sub>by Clawd himself 🦀</sub> |
-| **Clawn** 🤡 |  |  |  |
-| ![clown](emoji/clown/clawd_clown.gif) |  |  |  |
-| <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> |  |  |  |
+| **Clawn** 🤡 | **Melting Clawd** 🫠 |  |  |
+| ![clown](emoji/clown/clawd_clown.gif) | ![melting](emoji/melting/clawd_melting.gif) |  |  |
+| <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> |  |  |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
