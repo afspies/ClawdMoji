@@ -53,10 +53,28 @@ def pen_disk(r):
             if dy * dy + dx * dx <= lim]
 
 
+def _arc_eye(A, ty, tx, scale, color, thick, origin, curve):
+    """Draw one closed-eye arc across the eye cell at (ty, tx), `scale` wide.
+
+    `curve` maps -1..+1 across the cell to a 0..1 drop below `origin`; that is
+    the only thing separating the two closed eyes below. For scale >= 5 the arc
+    stays inside the cell, which callers rely on: a closed eye has to be a
+    recolour of the cell the open 'O' used, not a reshape of the creature.
+    """
+    depth = max(2, scale // 3)
+    H, W = A.shape
+    for i in range(scale):
+        t = 2 * i / (scale - 1) - 1                  # -1 .. +1 across the cell
+        y = int(round(origin + depth * curve(t)))
+        for k in range(thick):
+            if 0 <= y + k < H and 0 <= tx + i < W:
+                A[y + k, tx + i] = color
+
+
 def shut_eye(A, ty, tx, scale, color):
     """Draw a sleeping eyelid over one eye cell, at (ty, tx) with cell `scale`.
 
-    The '‿' arc sits lowest in the middle and lifts at both ends, and occupies
+    The '\u203f' arc sits lowest in the middle and lifts at both ends, and occupies
     exactly the cell the open 'O' eye used -- so a sleeping Clawd is a costume
     change, not a reshape of the creature.
 
@@ -65,15 +83,23 @@ def shut_eye(A, ty, tx, scale, color):
     disappears. Bold shapes over fine detail.
     """
     dip = max(2, scale // 3)
-    thick = max(2, scale // 3)
-    mid = ty + scale // 2 - dip // 2
-    H, W = A.shape
-    for i in range(scale):
-        t = 2 * i / (scale - 1) - 1                  # -1 .. +1 across the cell
-        y = int(round(mid + dip * (1 - t * t)))      # ends ride higher
-        for k in range(thick):
-            if 0 <= y + k < H and 0 <= tx + i < W:
-                A[y + k, tx + i] = color
+    _arc_eye(A, ty, tx, scale, color, max(2, scale // 3),
+             ty + scale // 2 - dip // 2, lambda t: 1 - t * t)
+
+
+def happy_eye(A, ty, tx, scale, color):
+    """Draw a closed, smiling '^' eye over one eye cell, at (ty, tx) with cell
+    `scale`. The mirror of shut_eye: the arc peaks in the middle and falls away
+    at both ends, which is the anime delight eye rather than a sleeping lid.
+    It keeps shut_eye's containment contract -- the arc stays inside the cell.
+
+    Fatter than shut_eye's stroke, because a '^' carries less ink than a '\u203f':
+    at 32 px a thin one reads as no eye at all.
+    """
+    rise = max(2, scale // 3)
+    thick = max(2, round(scale / 2.5))
+    _arc_eye(A, ty, tx, scale, color, thick,
+             ty + scale // 2 - rise // 2 - thick // 3, lambda t: t * t)
 
 
 def border_mask(body, pen):
