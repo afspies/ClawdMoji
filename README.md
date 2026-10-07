@@ -25,6 +25,9 @@ logo. No image editor involved.
 | **Clawn** 🤡 | **Melting Clawd** 🫠 | **Clawd Nigiri** 🍣 | **Clawdlock Holmes** 🔍 |
 | ![clown](emoji/clown/clawd_clown.gif) | ![melting](emoji/melting/clawd_melting.gif) | ![sushi](emoji/sushi/clawd_sushi.gif) | ![detective](emoji/detective/clawd_detective.gif) |
 | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> |
+| **Santa Clawd** 🎅 |  |  |  |
+| ![santa](emoji/santa/clawd_santa.gif) |  |  |  |
+| <sub>by [@martina-sol](https://github.com/martina-sol)</sub> |  |  |  |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
@@ -282,6 +285,7 @@ lands):
 <a href="https://github.com/victor-bajanov"><img src="https://github.com/victor-bajanov.png?size=128" width="64" height="64" alt="@victor-bajanov" title="@victor-bajanov"></a>
 <a href="https://github.com/Nitjsefnie"><img src="https://github.com/Nitjsefnie.png?size=128" width="64" height="64" alt="@Nitjsefnie" title="@Nitjsefnie"></a>
 <a href="https://github.com/aelliott-sol"><img src="https://github.com/aelliott-sol.png?size=128" width="64" height="64" alt="@aelliott-sol" title="@aelliott-sol"></a>
+<a href="https://github.com/martina-sol"><img src="https://github.com/martina-sol.png?size=128" width="64" height="64" alt="@martina-sol" title="@martina-sol"></a>
 <!-- contributors:end -->
 
 ## License
