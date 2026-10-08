@@ -5,8 +5,10 @@ Bearded, Santa-hatted Clawd holds a small wrapped green box up on his left
 hand, beside his head, and bobs with excitement. Once a loop the lid hops off
 and tilts, and a burst of sparkles fans up and over his hat; then the lid
 settles back for the next peek. The lid lift is a clipped sine of the loop
-phase, so it is shut again at frame F. Snow falls behind him the whole time:
-every flake travels exactly one canvas height per F frames, so it loops too.
+phase, so it is shut again at frame F. Snow drifts down behind him the whole
+time: the flake field repeats every half canvas and falls exactly that far per
+F frames, so it loops at half the speed a full-height fall would need. Slow,
+swaying, star-shaped flakes are what keep it from reading as rain.
 
 Clawd is full width (SCALE=10, 120 px); the box sits on top of his hand cell,
 inside the canvas, and the hat and sparkles use the headroom above.
@@ -60,14 +62,16 @@ OPEN_FROM, OPEN_TO = 0.30, 0.85  # the slice of the loop the lid is open
 
 # ---- sparkles --------------------------------------------------------------
 SPARKS = 10
-SPARK_RISE = 40                  # px a sparkle climbs: from the box to above the hat
+SPARK_RISE = 32                  # px a sparkle climbs: above the hat, still clear of the top edge
 SPARK_FAN_L, SPARK_FAN_R = -60, 6    # sideways spread; mostly left, over his hat
 SPARK_SEED = 1224
+SPARK_TO = 1.0                   # sparkles hang on after the lid shuts, gone by the loop's end
+SPARK_CLEAR = 2                 # px of empty sky kept around each sparkle
 
 # ---- snow ------------------------------------------------------------------
 SNOW_SEED = 1225                 # seeded so the flakes land where they landed
-SNOW_FLAKES = 30
-SNOW_DRIFT = 4                   # px of sideways sway per flake
+SNOW_FLAKES = 10                 # per half canvas; each one repeats N/2 lower
+SNOW_DRIFT = 6                   # px of sideways sway per flake
 
 # ---- palette (P-mode GIF: index 0 is transparent) --------------------------
 COLORS = [
@@ -85,10 +89,13 @@ COLORS = [
     (255, 255, 255),             # 11: sparkle core (same white as outline, by design)
     (232, 128, 118),             # 12: rosy cheeks
     (120, 24, 30),               # 13: open mouth
-    (150, 196, 236),             # 14: falling snow, mid blue so it reads on light and dark Slack
+    (92, 140, 200),              # 14: snowflake arms, deep blue so they read on white Slack
+    (255, 255, 255),             # 15: snowflake center, so they read on dark Slack
+    (150, 146, 140),             # 16: pom-pom ring, keeps the white pom off the white outline
+    (222, 218, 208),             # 17: pom-pom shadow
 ]
 (T, OUTLINE, BODY, EYE, RED, RED_D, FUR, GREEN, GREEN_D, GOLD, SPARK, SPARK_C,
- CHEEK_C, MOUTH, SNOW) = range(15)
+ CHEEK_C, MOUTH, SNOW, SNOW_C, POM_RING, POM_D) = range(18)
 PAL = bytes([c for rgb in COLORS for c in rgb] + [0] * (768 - 3 * len(COLORS)))
 
 
@@ -156,7 +163,10 @@ def draw_hat(g, head_y, x0, flop):
 
     tip_y = cone_base_y - (CONE_H - 1)
     tip_x = cx0 + TIP_LEAN - POM_SWING * flop
-    fill_disk(g, tip_y - 2, int(round(tip_x)), POM_R, FUR)
+    py, px = tip_y - 2, int(round(tip_x))
+    fill_disk(g, py, px, POM_R + 1, POM_RING)
+    fill_disk(g, py, px, POM_R, POM_D)
+    fill_disk(g, py - 1, px - 1, POM_R - 1, FUR)       # lit from the top left, like the hat
     g[brim_top:brim_top + BRIM_H, bl:br + 1] = FUR
 
 
@@ -202,7 +212,7 @@ def draw_box(g, y0, x0, opn):
 def spark_field():
     rng = np.random.default_rng(SPARK_SEED)
     xs = rng.uniform(SPARK_FAN_L, SPARK_FAN_R, SPARKS)    # offset from the box center
-    delay = rng.uniform(0, 0.35, SPARKS)              # stagger within the open slice
+    delay = rng.uniform(0, 0.35, SPARKS)              # stagger within the sparkle slice
     big = rng.random(SPARKS) < 0.5
     return list(zip(xs, delay, big))
 
@@ -210,19 +220,27 @@ def spark_field():
 SPARKLES = spark_field()
 
 
-def draw_sparks(g, y0, x0, t):
-    if not (OPEN_FROM < t < OPEN_TO):
-        return
-    u = (t - OPEN_FROM) / (OPEN_TO - OPEN_FROM)
+def spark_points(y0, x0, t):
+    """(y, x, arm) of every sparkle alive at loop phase t."""
+    if not (OPEN_FROM < t < SPARK_TO):
+        return []
+    u = (t - OPEN_FROM) / (SPARK_TO - OPEN_FROM)
     top, _, cx = box_anchor(y0, x0)
     start_y = top - LID_H
+    pts = []
     for (dx, delay, big) in SPARKLES:
         life = (u - delay) / (1 - delay)
         if life <= 0 or life >= 1:
             continue
         y = int(round(start_y - SPARK_RISE * (1 - (1 - life) ** 2)))  # fast out, then slows
         x = int(round(cx + dx * (0.2 + 0.8 * life)))   # fan out as they rise
-        arm = (5 if big else 4) if life < 0.75 else 2  # shrink as they fade
+        arm = (5 if big else 4) if life < 0.85 else 2  # shrink as they fade
+        pts.append((y, x, arm))
+    return pts
+
+
+def draw_sparks(g, sparks):
+    for (y, x, arm) in sparks:
         for d in range(-arm, arm + 1):
             w = 1 if abs(d) <= arm // 2 else 0          # 3 px thick near the center
             for k in range(-w, w + 1):
@@ -233,26 +251,53 @@ def draw_sparks(g, y0, x0, t):
 
 
 def snow_field():
+    # one flake per row band and per column band, so they never bunch into a gust and a gap
     rng = np.random.default_rng(SNOW_SEED)
-    xs = rng.integers(2, N - 3, SNOW_FLAKES)
-    ys = rng.integers(0, N, SNOW_FLAKES)
+    band_y, band_x = (N // 2) / SNOW_FLAKES, (N - 8) / SNOW_FLAKES
+    ys = ((np.arange(SNOW_FLAKES) + rng.uniform(0.2, 0.8, SNOW_FLAKES)) * band_y).astype(int)
+    xs = (4 + (rng.permutation(SNOW_FLAKES) + rng.uniform(0.2, 0.8, SNOW_FLAKES)) * band_x).astype(int)
     ph = rng.uniform(0, 2 * math.pi, SNOW_FLAKES)
-    big = rng.random(SNOW_FLAKES) < 0.4
-    return list(zip(xs, ys, ph, big))
+    big = rng.random(SNOW_FLAKES) < 0.5
+    half = list(zip(xs, ys, ph, big))
+    return half + [(x, y + N // 2, p, b) for (x, y, p, b) in half]
 
 
 FLAKES = snow_field()
 
+# (dy, dx, color) offsets from a flake's center
+def flake(arm, diag):
+    """Straight arms 2 px thick so they survive Slack's 32 px downscale; 1 px diagonals."""
+    pts = {}
+    for k in range(-arm, arm + 1):
+        for w in (0, 1):
+            pts[(k, w)] = pts[(w, k)] = SNOW
+    for k in range(1, diag + 1):
+        for (dy, dx) in ((-k, -k), (-k, k + 1), (k + 1, -k), (k + 1, k + 1)):
+            pts[(dy, dx)] = SNOW
+    for c in ((0, 0), (0, 1), (1, 0), (1, 1)):
+        pts[c] = SNOW_C
+    return [(dy, dx, col) for (dy, dx), col in pts.items()]
 
-def draw_snow(g, f):
+
+FLAKE_SMALL = flake(3, 2)
+FLAKE_BIG = flake(5, 3)
+
+
+def draw_snow(g, f, sparks):
     t = f / F
     for (x0, y0, ph, big) in FLAKES:
-        y = int(round((y0 + t * N) % N))              # one canvas height per loop
+        y = int(round((y0 + t * N / 2) % N))          # half a canvas per loop
         x = int(round(x0 + SNOW_DRIFT * math.sin(2 * math.pi * t + ph)))
-        s = 5 if big else 3
-        ys, xs = slice(max(0, y), min(N, y + s)), slice(max(0, x), min(N, x + s))
-        region = g[ys, xs]
-        region[region == T] = SNOW                    # behind everything already drawn
+        shape = FLAKE_BIG if big else FLAKE_SMALL
+        r = max(abs(dy) for dy, _, _ in shape)
+        gap = [r + arm + SPARK_CLEAR for (_, _, arm) in sparks]
+        if any(min(abs(y - sy), N - abs(y - sy)) <= d and abs(x - sx) <= d
+               for (sy, sx, _), d in zip(sparks, gap)):
+            continue                                  # the flake sits out while a sparkle passes
+        for dy, dx, color in shape:
+            yy, xx = (y + dy) % N, x + dx
+            if 0 <= xx < N and g[yy, xx] == T:        # behind everything already drawn
+                g[yy, xx] = color
 
 
 def compose(f):
@@ -275,8 +320,9 @@ def compose(f):
     solid = g != 0
     g[border_mask(solid, pen_disk(2))] = OUTLINE
 
-    draw_snow(g, f)
-    draw_sparks(g, y0, x0, t)                         # in front of everything
+    sparks = spark_points(y0, x0, t)
+    draw_snow(g, f, sparks)
+    draw_sparks(g, sparks)                            # in front of everything
     return g
 
 
