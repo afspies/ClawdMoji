@@ -8,7 +8,7 @@ the frame underneath it, so what you see in the glass is his eye, magnified.
 NOTE: this one is deliberately not built on the shared ART grid. It is drawn on
 its own 72-cell grid, read off the terminal splash's half-block glyphs (wide
 body, one-row hands, tall eyes), then cropped and scaled up to the canvas. The
-2 px white outline is still applied at full resolution.
+1 px white outline is applied at full resolution.
 """
 import math
 import sys
@@ -221,7 +221,7 @@ def compose(f, colors):
     g = np.zeros((N, N), dtype=np.uint8)
     solid = a[..., 3] > 0
     g[solid] = [lut[tuple(int(v) for v in c)] for c in a[solid][:, :3]]
-    g[border_mask(g != 0, pen_disk(2))] = 1
+    g[border_mask(g != 0, pen_disk(1))] = 1
     return g
 
 
