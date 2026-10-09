@@ -25,9 +25,9 @@ logo. No image editor involved.
 | **Clawn** 🤡 | **Melting Clawd** 🫠 | **Clawd Nigiri** 🍣 | **Clawdlock Holmes** 🔍 |
 | ![clown](emoji/clown/clawd_clown.gif) | ![melting](emoji/melting/clawd_melting.gif) | ![sushi](emoji/sushi/clawd_sushi.gif) | ![detective](emoji/detective/clawd_detective.gif) |
 | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> |
-| **Santa Clawd** 🎅 |  |  |  |
-| ![santa](emoji/santa/clawd_santa.gif) |  |  |  |
-| <sub>by [@martina-sol](https://github.com/martina-sol)</sub> |  |  |  |
+| **Santa Clawd** 🎅 | **Uncle Clawd** 🇺🇸 |  |  |
+| ![santa](emoji/santa/clawd_santa.gif) | ![unclesam](emoji/unclesam/clawd_unclesam.gif) |  |  |
+| <sub>by [@martina-sol](https://github.com/martina-sol)</sub> | <sub>by Clawd himself 🦀</sub> |  |  |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
