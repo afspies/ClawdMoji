@@ -25,9 +25,9 @@ logo. No image editor involved.
 | **Clawn** 🤡 | **Melting Clawd** 🫠 | **Clawd Nigiri** 🍣 | **Clawdlock Holmes** 🔍 |
 | ![clown](emoji/clown/clawd_clown.gif) | ![melting](emoji/melting/clawd_melting.gif) | ![sushi](emoji/sushi/clawd_sushi.gif) | ![detective](emoji/detective/clawd_detective.gif) |
 | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> | <sub>by [@aelliott-sol](https://github.com/aelliott-sol)</sub> |
-| **Santa Clawd** 🎅 | **Uncle Clawd** 🇺🇸 |  |  |
-| ![santa](emoji/santa/clawd_santa.gif) | ![unclesam](emoji/unclesam/clawd_unclesam.gif) |  |  |
-| <sub>by [@martina-sol](https://github.com/martina-sol)</sub> | <sub>by Clawd himself 🦀</sub> |  |  |
+| **Santa Clawd** 🎅 | **Uncle Clawd** 🇺🇸 | **Wish Upon a Clawd** 🎂 | **Clawd Cake-a-Boo** 🎉 |
+| ![santa](emoji/santa/clawd_santa.gif) | ![unclesam](emoji/unclesam/clawd_unclesam.gif) | ![birthday](emoji/birthday/clawd_birthday.gif) | ![cakeaboo](emoji/cakeaboo/clawd_cakeaboo.gif) |
+| <sub>by [@martina-sol](https://github.com/martina-sol)</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> | <sub>by Clawd himself 🦀</sub> |
 <!-- gallery:end -->
 
 Browse the **[live gallery](https://afspies.github.io/ClawdMoji/)** (GIFs
